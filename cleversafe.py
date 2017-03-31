@@ -49,7 +49,7 @@ class CleversafeManager(object):
         base_url = "https://{host}:{port}/manager/api/json/1.0/{oper}".format(host=self._host, port=self._port,oper=operation)
         url = base_url + '?' + urlencode(dict(**kwargs))
         print url
-        return requests.request(method, url, auth=self.__auth, verify=False)
+        return requests.request(method, url, auth=self.__auth, verify="/home/ubuntu/storage-client/my_pem.pem")
 
 
     def update_bucket_acl(self, bucket, read_acl):
