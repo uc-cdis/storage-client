@@ -48,11 +48,9 @@ class CleversafeManager(object):
         base_url = "https://{host}/manager/api/json/1.0/{oper}".format(host=self._host, port=self._port,oper=operation)
         url = base_url + '?' + urlencode(dict(**kwargs))
         print url
-<<<<<<< HEAD
         return requests.request(method, url, auth=self.__auth, verify=False)#self-signed certificate
-=======
-        return requests.request(method, url, auth=self.__auth, verify="/home/ubuntu/storage-client/my_pem.pem")
->>>>>>> 4f057b9a0eb99e61f9309515f9b4e66ff7e8025e
+
+
 
 
     def update_bucket_acl(self, bucket, read_acl):
@@ -81,7 +79,7 @@ class CleversafeManager(object):
         - access_keys
         - emailxs
         """
-        return self._request('GET', 'viewSystem.adm', shouldDisappear=True, itemType='account', id=uid)
+        return self._request('GET', 'viewSystem.adm', itemType='account', id=uid)
 
     def list_buckets(self):
         return self._request('GET', 'listVaults.adm')
