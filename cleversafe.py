@@ -2,9 +2,7 @@
 Connection manager for the Cleversafe storage system
 Since it is compatible with S3, we will be using boto.
 """
-#from boto.s3 import connection
 from boto import connect_s3
-from awsauth import S3Auth
 import requests
 import logging
 from urllib import urlencode
@@ -37,26 +35,40 @@ class CleversafeManager(object):
         self._access_key = config['aws_access_key_id']
         self._secret_key = config['aws_secret_access_key']
         self._port = config['port']
-        self.__auth = S3Auth(self._access_key, self._secret_key,
-                             self._host+':'+self._port)
-        self._conn = connect_s3(**self.__config)
+        self.__username = config['username']
+        self.__password = config['password']
+        self.__auth = requests.auth.HTTPBasicAuth(self.__username, self.__password)
+        self._conn = connect_s3(self._access_key, self._secret_key)
 
     #@handle_request
-    def _request(self, method, operation, **kwargs):
+    def _request(self, method, operation, shouldDisappear=False, **kwargs):
         """
         Compose the request and send it
         """
-        base_url = "https://{host}:{port}/manager/api/json/1.0/{oper}".format(host=self._host, port=self._port,oper=operation)
+        base_url = "https://{host}/manager/api/json/1.0/{oper}".format(host=self._host, port=self._port,oper=operation)
         url = base_url + '?' + urlencode(dict(**kwargs))
         print url
+<<<<<<< HEAD
+        return requests.request(method, url, auth=self.__auth, verify=False)#self-signed certificate
+=======
         return requests.request(method, url, auth=self.__auth, verify="/home/ubuntu/storage-client/my_pem.pem")
+>>>>>>> 4f057b9a0eb99e61f9309515f9b4e66ff7e8025e
 
 
     def update_bucket_acl(self, bucket, read_acl):
         pass
 
     def has_bucket_access(self, bucket, user_id):
-        pass
+        """
+        Find if a user is in the grants list of the acl for
+        a certain bucket.
+        Please keep in mind that buckets must be all lowercase
+        """
+        bucket = self._conn.get_bucket(bucket,validate=False)
+        for acl in bucket.get_acl().acl.grants:
+            if acl.id == user_id:
+                return True
+        return False
 
     def get_user(self, uid):
         """
@@ -69,10 +81,10 @@ class CleversafeManager(object):
         - access_keys
         - emailxs
         """
-        return self._request('GET', 'viewSystem.adm',itemType='account',id=uid)
+        return self._request('GET', 'viewSystem.adm', shouldDisappear=True, itemType='account', id=uid)
 
     def list_buckets(self):
-        pass
+        return self._request('GET', 'listVaults.adm')
 
     def create_user(self, uid, **kwargs):
         pass
@@ -96,5 +108,5 @@ class CleversafeManager(object):
         pass
 
     def get_bucket(self, bucket):
-        pass
+        return self._request('GET', 'listVaults.adm',name=bucket)
 
