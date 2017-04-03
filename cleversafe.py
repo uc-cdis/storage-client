@@ -109,13 +109,21 @@ class CleversafeManager(object):
         return self._request('POST','deleteAccount.adm', payload=data) 
 
     def remove_key(self, uid, access_key):
-        pass
+        """
+        Remove the give key/secret that match the key id
+        """
+        data = {'id':uid, 'accessKeyId': access_key, 'action': 'remove'}
+        return self._request('POST', 'editAccountAccessKey.adm', payload=data) 
 
     def remove_all_keys(self, uid):
         pass
 
-    def create_key(self, uid, **kwargs):
-        pass
+    def create_key(self, uid):
+        """
+        Add a new key/secret pair
+        """
+        data = {'id':uid, 'action': 'add'}
+        return self._request('POST', 'editAccountAccessKey.adm', payload=data)
 
     def create_bucket(self, access_key, secret_key, bucket_name):
         pass
