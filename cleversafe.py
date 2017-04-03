@@ -41,14 +41,16 @@ class CleversafeManager(object):
         self._conn = connect_s3(self._access_key, self._secret_key)
 
     #@handle_request
-    def _request(self, method, operation, shouldDisappear=False, **kwargs):
+    def _request(self, method, operation, payload=None, **kwargs):
         """
         Compose the request and send it
+        TODO
+        - Reactivate the exception handling on the wrapper when this is tested
         """
-        base_url = "https://{host}/manager/api/json/1.0/{oper}".format(host=self._host, port=self._port,oper=operation)
+        base_url = "https://{host}/manager/api/json/1.0/{oper}".format(host=self._host, oper=operation)
         url = base_url + '?' + urlencode(dict(**kwargs))
         print url
-        return requests.request(method, url, auth=self.__auth, verify=False)#self-signed certificate
+        return requests.request(method, url, auth=self.__auth, data=payload, verify=False)#self-signed certificate
 
 
 
@@ -82,16 +84,29 @@ class CleversafeManager(object):
         return self._request('GET', 'viewSystem.adm', itemType='account', id=uid)
 
     def list_buckets(self):
+        """
+        Lists all the vaults(buckets) and their information
+        """
         return self._request('GET', 'listVaults.adm')
 
-    def create_user(self, uid, **kwargs):
-        pass
+    def create_user(self, **kwargs):
+        """
+        Creates a user
+        TODO
+        Input sanitazion for parameters
+        """
+        return self._request('POST', 'createAccount.adm', payload=kwargs)
 
     def set_quota(self, uid, quota):
         pass
 
     def delete_user(self, uid):
-        pass
+        """
+        Eliminate a user account
+        Requires the password from the account requesting the deletion
+        """
+        data = {'id': uid, 'password': self.__config['password']}
+        return self._request('POST','deleteAccount.adm', payload=data) 
 
     def remove_key(self, uid, access_key):
         pass
@@ -106,5 +121,7 @@ class CleversafeManager(object):
         pass
 
     def get_bucket(self, bucket):
+        """
+        Retrieves the information from the bucket matching the name
+        """
         return self._request('GET', 'listVaults.adm',name=bucket)
-
