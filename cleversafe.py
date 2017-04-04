@@ -133,12 +133,29 @@ class CleversafeManager(object):
         return self._request('GET', 'listVaults.adm',name=bucket)
 
     def get_or_create_user(self, uid):
+        """
+        Tries to get a user and if it doesn't exist, creates a new one
+        """
         r = self.get_user(uid)
         if r.status_code == 200:
             return r
         else:
             return self.create_user()
 
+    def get_or_create_bucket(
+            self, access_key, secret_key, bucket_name, **kwargs):
+        """
+        Tries to retrieve a bucket and if it doesn't exist, creates a new one
+        TODO
+        - Implement create bucket
+        - Make sure it is a bucket name issue and not a permissions issue
+        """
+        r = self.get_bucket(bucket_name)
+        if r.status_code == 200:
+            return r
+        else:
+            return self.create_bucket(access_key, secret_key, bucket_name)
+    
     def create_bucket(self, access_key, secret_key, bucket_name):
         pass
 
