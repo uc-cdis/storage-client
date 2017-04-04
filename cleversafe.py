@@ -53,9 +53,6 @@ class CleversafeManager(object):
         return requests.request(method, url, auth=self.__auth, data=payload, verify=False)#self-signed certificate
 
 
-    def update_bucket_acl(self, bucket, read_acl):
-        pass
-
     def has_bucket_access(self, bucket, user_id):
         """
         Find if a user is in the grants list of the acl for
@@ -95,9 +92,6 @@ class CleversafeManager(object):
         """
         return self._request('POST', 'createAccount.adm', payload=kwargs)
 
-    def set_quota(self, uid, quota):
-        pass
-
     def delete_user(self, uid):
         """
         Eliminate a user account
@@ -132,11 +126,24 @@ class CleversafeManager(object):
         data = {'id':uid, 'action': 'add'}
         return self._request('POST', 'editAccountAccessKey.adm', payload=data)
 
-    def create_bucket(self, access_key, secret_key, bucket_name):
-        pass
-
     def get_bucket(self, bucket):
         """
         Retrieves the information from the bucket matching the name
         """
         return self._request('GET', 'listVaults.adm',name=bucket)
+
+    def get_or_create_user(self, uid):
+        r = self.get_user(uid)
+        if r.status_code == 200:
+            return r
+        else:
+            return self.create_user()
+
+    def create_bucket(self, access_key, secret_key, bucket_name):
+        pass
+
+    def set_quota(self, uid, quota):
+        pass
+
+    def update_bucket_acl(self, bucket, read_acl):
+        pass
