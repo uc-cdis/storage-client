@@ -6,8 +6,9 @@ from boto import connect_s3
 import requests
 import logging
 from urllib import urlencode
-import ast
-#logging.basicConfig()
+import json
+
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 def handle_request(f):
@@ -47,10 +48,14 @@ class CleversafeManager(object):
         TODO
         - Reactivate the exception handling on the wrapper when this is tested
         """
-        base_url = "https://{host}/manager/api/json/1.0/{oper}".format(host=self._host, oper=operation)
+        base_url = "https://{host}/manager/api/json/1.0/{oper}".format(
+            host=self._host, oper=operation)
         url = base_url + '?' + urlencode(dict(**kwargs))
         print url
-        return requests.request(method, url, auth=self.__auth, data=payload, verify=False)#self-signed certificate
+        return requests.request(method, url,
+                                auth=self.__auth,
+                                data=payload,
+                                verify=False)#self-signed certificate
 
 
     def has_bucket_access(self, bucket, user_id):
@@ -58,12 +63,18 @@ class CleversafeManager(object):
         Find if a user is in the grants list of the acl for
         a certain bucket.
         Please keep in mind that buckets must be all lowercase
+        TODO
+        Make sure whther we are using the id or the canonical id to
+        identify the user
+        Also get to know whether the permission type has to be checked too
         """
-        bucket = self._conn.get_bucket(bucket,validate=False)
-        for acl in bucket.get_acl().acl.grants:
-            if acl.id == user_id:
+        r = self.get_bucket(bucket)
+        jsn = json.loads(r.text)
+        for accs in jsn['responseData']['vaults'][0]['accessPermissions']:
+            if accs['principal']['id'] == user_id:
                 return True
         return False
+            
 
     def get_user(self, uid):
         """
@@ -72,11 +83,14 @@ class CleversafeManager(object):
         - username
         - name
         - roles
-        - permissinos
+        - permissions
         - access_keys
         - emailxs
         """
-        return self._request('GET', 'viewSystem.adm', itemType='account', id=uid)
+        return self._request('GET',
+                             'viewSystem.adm',
+                             itemType='account', 
+                             id=uid)
 
     def list_buckets(self):
         """
@@ -126,11 +140,25 @@ class CleversafeManager(object):
         data = {'id':uid, 'action': 'add'}
         return self._request('POST', 'editAccountAccessKey.adm', payload=data)
 
+
+    def get_bucket_by_id(self, vid):
+        """
+        Get bucket by id
+        """
+        return self._request('GET', 'viewSystem.adm', itemType='vault', id=vid)
+
     def get_bucket(self, bucket):
         """
         Retrieves the information from the bucket matching the name
+        Sadly there seems to be no way of getting a bucket the name,
+        so in order to do it we get all of them and them we use
+        get_bucket_by_id to retrieve the specific bucket
         """
-        return self._request('GET', 'listVaults.adm',name=bucket)
+        r = self.list_buckets()
+        jsn = json.loads(r.text)
+        for i in jsn['responseData']['vaults']:
+            if i['name'] == bucket:
+                return self.get_bucket_by_id(i['id'])
 
     def get_or_create_user(self, uid):
         """
@@ -157,6 +185,11 @@ class CleversafeManager(object):
             return self.create_bucket(access_key, secret_key, bucket_name)
     
     def create_bucket(self, access_key, secret_key, bucket_name):
+        """
+        Requires the following parameters
+        name - segmentSize - segmentSizeUnit - vaultWidth - threshold 
+        - storagePoolId - privacyEnabled
+        """
         pass
 
     def set_quota(self, uid, quota):
