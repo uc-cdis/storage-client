@@ -6,7 +6,7 @@ from boto import connect_s3
 import requests
 import logging
 from urllib import urlencode
-
+import ast
 #logging.basicConfig()
 logger = logging.getLogger(__name__)
 
@@ -51,8 +51,6 @@ class CleversafeManager(object):
         url = base_url + '?' + urlencode(dict(**kwargs))
         print url
         return requests.request(method, url, auth=self.__auth, data=payload, verify=False)#self-signed certificate
-
-
 
 
     def update_bucket_acl(self, bucket, read_acl):
@@ -116,7 +114,16 @@ class CleversafeManager(object):
         return self._request('POST', 'editAccountAccessKey.adm', payload=data) 
 
     def remove_all_keys(self, uid):
-        pass
+        """
+        Remove all keys from a give user
+        TODO
+        Make this robust against possible errors so most of the keys are deleted
+        or retried
+        """
+        req = cm.get_user(uid)
+        jsn = json.loads(req.text)
+        for key in jsn['responseData']['accounts'][0]['accessKeys']:
+             self.remove_key(uid, key['accessKeyId'])
 
     def create_key(self, uid):
         """
