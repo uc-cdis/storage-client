@@ -3,6 +3,7 @@ Connection manager for the Cleversafe storage system
 Since it is compatible with S3, we will be using boto.
 """
 from boto import connect_s3
+from boto.s3 import connection
 import requests
 import logging
 from urllib import urlencode
@@ -33,13 +34,14 @@ class CleversafeManager(object):
         """
         self.__config = config
         self._host = config['host']
+        self._public_host = config['public-host']
         self._access_key = config['aws_access_key_id']
         self._secret_key = config['aws_secret_access_key']
         self._port = config['port']
         self.__username = config['username']
         self.__password = config['password']
         self.__auth = requests.auth.HTTPBasicAuth(self.__username, self.__password)
-        self._conn = connect_s3(self._access_key, self._secret_key)
+        self._conn = connect_s3(aws_access_key_id=self._access_key, aws_secret_access_key=self._secret_key, host=self._public_host, calling_format=connection.OrdinaryCallingFormat())
 
     #@handle_request
     def _request(self, method, operation, payload=None, **kwargs):
@@ -67,14 +69,12 @@ class CleversafeManager(object):
         Make sure whther we are using the id or the canonical id to
         identify the user
         Also get to know whether the permission type has to be checked too
-        """
-        r = self.get_bucket(bucket)
-        jsn = json.loads(r.text)
-        for accs in jsn['responseData']['vaults'][0]['accessPermissions']:
-            if accs['principal']['id'] == user_id:
+        """ 
+        bucket = self._conn.get_bucket(bucket)
+        for acl in bucket.get_acl().acl.grants:
+            if acl.display_name == user_id:
                 return True
         return False
-            
 
     def get_user(self, uid):
         """
@@ -191,6 +191,16 @@ class CleversafeManager(object):
         - storagePoolId - privacyEnabled
         """
         pass
+
+    def edit_bucket_template(self, **kwargs):
+        """
+        Change the desired parameters of the default template
+        This will affect every new bucket creation
+        The idea is to have only one template, the default one, and
+        modify it
+        """
+        
+        return self.request('POST', 'editDefaultVaultTemplate.adm', payload=kwargs)
 
     def set_quota(self, uid, quota):
         pass
