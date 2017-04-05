@@ -186,11 +186,13 @@ class CleversafeManager(object):
     
     def create_bucket(self, access_key, secret_key, bucket_name):
         """
-        Requires the following parameters
-        name - segmentSize - segmentSizeUnit - vaultWidth - threshold 
-        - storagePoolId - privacyEnabled
+        Requires a default template created on cleversafe
         """
-        pass
+        creds = {'host':self._public_host}
+        creds['aws_access_key_id'] = access_key
+        creds['aws_secret_access_key'] = secret_key
+        conn = connect_s3(calling_format=connection.OrdinaryCallingFormat(),**creds)
+        return conn.create_bucket(bucket_name)
 
     def edit_bucket_template(self, **kwargs):
         """
@@ -199,8 +201,8 @@ class CleversafeManager(object):
         The idea is to have only one template, the default one, and
         modify it
         """
-        
-        return self.request('POST', 'editDefaultVaultTemplate.adm', payload=kwargs)
+        pass
+
 
     def set_quota(self, uid, quota):
         pass
