@@ -233,8 +233,9 @@ class CleversafeManager(object):
                 if key.get_acl().to_xml() != new_policy:
                     key.set_xml_acl(new_policy)
 
-    def set_bucket_qouta(self, bucket, qouta):
+    def set_bucket_quota(self, bucket, quota_unit, quota):
         """
         Set qouta for the enetire bucket/vault
         """
-        pass
+        data={'hardQuotaSize': quota, 'hardQuotaUnit': quota_unit, 'id': bucket}
+        return self._request('POST', 'editVault.adm', payload=data)
