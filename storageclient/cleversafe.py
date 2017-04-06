@@ -60,9 +60,15 @@ class CleversafeManager(StorageClient):
             calling_format=connection.OrdinaryCallingFormat())
 
     def provider(self):
+        """
+        Returns the type of storage
+        """
         return "Cleversafe"
 
     def list_users(self):
+        """
+        Return the list of user objects
+        """
         pass
 
     #@handle_request
