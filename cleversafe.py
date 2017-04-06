@@ -4,21 +4,29 @@ Since it is compatible with S3, we will be using boto.
 """
 from boto import connect_s3
 from boto.s3 import connection
+from boto.s3.acl import Grant
 import requests
 import logging
 from urllib import urlencode
 import json
 
 logging.basicConfig()
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
-def handle_request(f):
+def handle_request(fun):
+    """
+    Exception treatment for the REST API calls
+    """
     def wrapper(*args, **kwargs):
+        """
+        We raise an internal error when
+        TODO integrate class InternalError in our repo
+        """
         try:
-            return f(*args, **kwargs)
-        except Exception as e:
-            logger.exception("internal error")
-            #raise InternalError(e)
+            return fun(*args, **kwargs)
+        except Exception as req_exception:
+            LOGGER.exception("internal error")
+            #raise InternalError(req_exception)
     return wrapper
 
 
@@ -40,8 +48,13 @@ class CleversafeManager(object):
         self._port = config['port']
         self.__username = config['username']
         self.__password = config['password']
-        self.__auth = requests.auth.HTTPBasicAuth(self.__username, self.__password)
-        self._conn = connect_s3(aws_access_key_id=self._access_key, aws_secret_access_key=self._secret_key, host=self._public_host, calling_format=connection.OrdinaryCallingFormat())
+        self.__auth = requests.auth.HTTPBasicAuth(self.__username,
+                                                  self.__password)
+        self._conn = connect_s3(
+            aws_access_key_id=self._access_key,
+            aws_secret_access_key=self._secret_key,
+            host=self._public_host,
+            calling_format=connection.OrdinaryCallingFormat())
 
     #@handle_request
     def _request(self, method, operation, payload=None, **kwargs):
@@ -65,11 +78,7 @@ class CleversafeManager(object):
         Find if a user is in the grants list of the acl for
         a certain bucket.
         Please keep in mind that buckets must be all lowercase
-        TODO
-        Make sure whther we are using the id or the canonical id to
-        identify the user
-        Also get to know whether the permission type has to be checked too
-        """ 
+        """
         bucket = self._conn.get_bucket(bucket)
         for acl in bucket.get_acl().acl.grants:
             if acl.display_name == user_id:
@@ -89,7 +98,7 @@ class CleversafeManager(object):
         """
         return self._request('GET',
                              'viewSystem.adm',
-                             itemType='account', 
+                             itemType='account',
                              id=uid)
 
     def list_buckets(self):
@@ -112,14 +121,14 @@ class CleversafeManager(object):
         Requires the password from the account requesting the deletion
         """
         data = {'id': uid, 'password': self.__config['password']}
-        return self._request('POST','deleteAccount.adm', payload=data) 
+        return self._request('POST', 'deleteAccount.adm', payload=data)
 
     def remove_key(self, uid, access_key):
         """
         Remove the give key/secret that match the key id
         """
         data = {'id':uid, 'accessKeyId': access_key, 'action': 'remove'}
-        return self._request('POST', 'editAccountAccessKey.adm', payload=data) 
+        return self._request('POST', 'editAccountAccessKey.adm', payload=data)
 
     def remove_all_keys(self, uid):
         """
@@ -128,10 +137,10 @@ class CleversafeManager(object):
         Make this robust against possible errors so most of the keys are deleted
         or retried
         """
-        req = cm.get_user(uid)
+        req = self.get_user(uid)
         jsn = json.loads(req.text)
         for key in jsn['responseData']['accounts'][0]['accessKeys']:
-             self.remove_key(uid, key['accessKeyId'])
+            self.remove_key(uid, key['accessKeyId'])
 
     def create_key(self, uid):
         """
@@ -150,40 +159,32 @@ class CleversafeManager(object):
     def get_bucket(self, bucket):
         """
         Retrieves the information from the bucket matching the name
-        Sadly there seems to be no way of getting a bucket the name,
-        so in order to do it we get all of them and them we use
-        get_bucket_by_id to retrieve the specific bucket
         """
-        r = self.list_buckets()
-        jsn = json.loads(r.text)
-        for i in jsn['responseData']['vaults']:
-            if i['name'] == bucket:
-                return self.get_bucket_by_id(i['id'])
+        return self._conn.get_bucket(bucket)
 
     def get_or_create_user(self, uid):
         """
         Tries to get a user and if it doesn't exist, creates a new one
         """
-        r = self.get_user(uid)
-        if r.status_code == 200:
-            return r
+        user = self.get_user(uid)
+        if user.status_code == 200:
+            return user
         else:
             return self.create_user()
 
     def get_or_create_bucket(
-            self, access_key, secret_key, bucket_name, **kwargs):
+            self, access_key, secret_key, bucket_name):
         """
         Tries to retrieve a bucket and if it doesn't exist, creates a new one
         TODO
-        - Implement create bucket
         - Make sure it is a bucket name issue and not a permissions issue
         """
-        r = self.get_bucket(bucket_name)
-        if r.status_code == 200:
-            return r
+        bucket = self.get_bucket(bucket_name)
+        if bucket != None:
+            return bucket
         else:
             return self.create_bucket(access_key, secret_key, bucket_name)
-    
+
     def create_bucket(self, access_key, secret_key, bucket_name):
         """
         Requires a default template created on cleversafe
@@ -191,21 +192,49 @@ class CleversafeManager(object):
         creds = {'host':self._public_host}
         creds['aws_access_key_id'] = access_key
         creds['aws_secret_access_key'] = secret_key
-        conn = connect_s3(calling_format=connection.OrdinaryCallingFormat(),**creds)
+        conn = connect_s3(calling_format=connection.OrdinaryCallingFormat(),
+                          **creds)
         return conn.create_bucket(bucket_name)
 
-    def edit_bucket_template(self, **kwargs):
+    def edit_bucket_template(self, default_template_id, **kwargs):
         """
         Change the desired parameters of the default template
         This will affect every new bucket creation
         The idea is to have only one template, the default one, and
-        modify it
+        modify it accordingly
         """
-        pass
-
-
-    def set_quota(self, uid, quota):
-        pass
+        data = kwargs
+        data['id'] = default_template_id
+        return self._request('POST', 'editVaultTemplate.adm',
+                             payload=data)
 
     def update_bucket_acl(self, bucket, read_acl):
+        """
+        Get an acl object and add the missing credentials
+        to the one retrieved from the target bucket
+        """
+        bucket = self._conn.get_bucket(bucket)
+        policy = bucket.get_acl()
+        prev_policy = policy.to_xml()
+        grants = []
+        for grant in policy.acl.grants:
+            if grant.permission != "READ":
+                grants.append(grant)
+        for userid in read_acl:
+            grant = Grant(
+                id=userid, display_name=userid,
+                permission='READ', type='CanonicalUser')
+            grants.append(grant)
+        policy.acl.grants = grants
+        new_policy = policy.to_xml()
+        if prev_policy != new_policy:
+            bucket.set_xml_acl(new_policy)
+            for key in bucket.get_all_keys():
+                if key.get_acl().to_xml() != new_policy:
+                    key.set_xml_acl(new_policy)
+
+    def set_bucket_qouta(self, bucket, qouta):
+        """
+        Set qouta for the enetire bucket/vault
+        """
         pass
