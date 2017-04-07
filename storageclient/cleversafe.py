@@ -9,7 +9,7 @@ import requests
 import logging
 from urllib import urlencode
 import json
-from base import StorageClient
+from base import StorageClient, User
 from errors import RequestError
 
 
@@ -65,12 +65,6 @@ class CleversafeManager(StorageClient):
         """
         return "Cleversafe"
 
-    def list_users(self):
-        """
-        Return the list of user objects
-        """
-        pass
-
     #@handle_request
     def _request(self, method, operation, payload=None, **kwargs):
         """
@@ -87,6 +81,17 @@ class CleversafeManager(StorageClient):
                                 data=payload,
                                 verify=False)#self-signed certificate
 
+    def list_users(self):
+        """
+        Returns a list with all the users, in User objects
+        """
+        response = self._request('GET', 'listAccounts.adm')
+        jsn = json.loads(response.text)
+        user_list = []
+        for user in jsn['responseData']['accounts']:
+            new_user = User(user['name'])
+            user_list.append(new_user)
+        return user_list
 
     def has_bucket_access(self, bucket, user_id):
         """
