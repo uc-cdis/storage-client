@@ -49,7 +49,22 @@ class StorageClient(object):
         """
         raise NotImplementedError()
 
+    @abstractmethod
+    def get_or_create_user(self, username):
+        """
+        Tries to retrieve a user.
+        If the user is not found, a new one
+        is created and returned
+        """
+        raise NotImplementedError()
+
 
 class User(object):
     def __init__(self, username):
+        """
+        - permissions {'bucketname': 'PERMISSION'}
+        - keys ['key_id']
+        """
         self.username = username
+        self.permissions = {}
+        self.keys = []
