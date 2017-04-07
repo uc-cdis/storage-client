@@ -120,8 +120,22 @@ class CleversafeManager(StorageClient):
                              'viewSystem.adm',
                              itemType='account',
                              id=uid)
-        user = json.loads(response.text)
-        return User(user['responseData']['accounts'][0]['name'])
+        if response.status_code == 200:
+            user = json.loads(response.text)
+            new_user = User(user['responseData']['accounts'][0]['name'])
+            new_user.id = user['responseData']['accounts'][0]['id']
+            for key in user['responseData']['accounts'][0]['accessKeys']:
+                new_user.keys.append(key['accessKeyId'])
+            for role in user['responseData']['accounts'][0]['roles']:
+                if role['role'] == 'vaultUser':
+                    vault_roles = role['vaultPermissions']
+            for vault_permission in vault_roles:
+                vault_response = self.get_bucket_by_id(vault_permission['vault'])
+                vault = json.loads(vault_response.text)
+                new_user.permissions[vault['responseData']['vaults'][0]['name']] = vault_permission['permission']
+            return new_user
+        else:
+            return None
 
     def list_buckets(self):
         """
@@ -132,8 +146,7 @@ class CleversafeManager(StorageClient):
     def create_user(self, **kwargs):
         """
         Creates a user
-        TODO
-        Input sanitazion for parameters
+        TODO Input sanitazion for parameters
         """
         return self._request('POST', 'createAccount.adm', payload=kwargs)
 
@@ -152,17 +165,15 @@ class CleversafeManager(StorageClient):
         data = {'id':uid, 'accessKeyId': access_key, 'action': 'remove'}
         return self._request('POST', 'editAccountAccessKey.adm', payload=data)
 
-    def remove_all_keys(self, uid):
+    def remove_all_keys(self, name):
         """
         Remove all keys from a give user
-        TODO
-        Make this robust against possible errors so most of the keys are deleted
+        TODO Make this robust against possible errors so most of the keys are deleted
         or retried
         """
-        req = self.get_user(uid)
-        jsn = json.loads(req.text)
-        for key in jsn['responseData']['accounts'][0]['accessKeys']:
-            self.remove_key(uid, key['accessKeyId'])
+        user = self.get_user(name)
+        for key in user.keys:
+            self.remove_key(user.id, key)
 
     def create_key(self, uid):
         """
@@ -184,12 +195,12 @@ class CleversafeManager(StorageClient):
         """
         return self._conn.get_bucket(bucket)
 
-    def get_or_create_user(self, uid):
+    def get_or_create_user(self, name):
         """
         Tries to get a user and if it doesn't exist, creates a new one
         """
-        user = self.get_user(uid)
-        if user.status_code == 200:
+        user = self.get_user(name)
+        if user != None:
             return user
         else:
             return self.create_user()
@@ -198,8 +209,6 @@ class CleversafeManager(StorageClient):
             self, access_key, secret_key, bucket_name):
         """
         Tries to retrieve a bucket and if it doesn't exist, creates a new one
-        TODO
-        - Make sure it is a bucket name issue and not a permissions issue
         """
         bucket = self.get_bucket(bucket_name)
         if bucket != None:

@@ -68,3 +68,4 @@ class User(object):
         self.username = username
         self.permissions = {}
         self.keys = []
+        self.id = None
