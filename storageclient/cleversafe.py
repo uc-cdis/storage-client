@@ -23,7 +23,6 @@ def handle_request(fun):
     def wrapper(*args, **kwargs):
         """
         We raise an internal error when
-        TODO integrate class InternalError in our repo
         """
         try:
             return fun(*args, **kwargs)
@@ -69,8 +68,6 @@ class CleversafeManager(StorageClient):
     def _request(self, method, operation, payload=None, **kwargs):
         """
         Compose the request and send it
-        TODO
-        - Reactivate the exception handling on the wrapper when this is tested
         """
         base_url = "https://{host}/manager/api/json/1.0/{oper}".format(
             host=self._host, oper=operation)
@@ -269,5 +266,5 @@ class CleversafeManager(StorageClient):
         """
         Set qouta for the enetire bucket/vault
         """
-        data={'hardQuotaSize': quota, 'hardQuotaUnit': quota_unit, 'id': bucket}
+        data = {'hardQuotaSize': quota, 'hardQuotaUnit': quota_unit, 'id': bucket}
         return self._request('POST', 'editVault.adm', payload=data)
