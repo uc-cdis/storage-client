@@ -116,10 +116,12 @@ class CleversafeManager(StorageClient):
         - access_keys
         - emailxs
         """
-        return self._request('GET',
+        response = self._request('GET',
                              'viewSystem.adm',
                              itemType='account',
                              id=uid)
+        user = json.loads(response.text)
+        return User(user['responseData']['accounts'][0]['name'])
 
     def list_buckets(self):
         """
