@@ -16,6 +16,23 @@
             "responseStatus": "ok"
         }
     },
+    "action=add&id=14": {
+        "status_code": "404",
+        "text": {
+            "responseData": {
+                "accessKeyId": "ZZZZZZZZZZZZZZZ",
+                "creationDate": 1492034247291,
+                "id": 76,
+                "secretAccessKey": "AAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHNNNNNN"
+            },
+            "responseHeader": {
+                "now": 1492034247299,
+                "requestId": "WO6ixwoQgF4AAAZw1cQAAACo",
+                "status": "ok"
+            },
+            "responseStatus": "ok"
+        }
+    },
     "action=remove&id=95&accessKeyId=XXXXXXXXXXXXXX": {
         "status_code": "200",
         "text": {
@@ -27,5 +44,13 @@
             },
             "responseStatus": "ok"
         }
+    },
+    "action=remove&id=95&accessKeyId=YYYYYYYYYYYYYYY":{
+	"status_code": "404",
+	"text": "Error when retrieving the key"
+    },
+    "action=remove&id=12&accessKeyId=YYYYYYYYYYYYYYY":{
+	"status_code": "404",
+	"text": "Error when retrieving the key"
     }
 }

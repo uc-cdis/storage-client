@@ -53,8 +53,7 @@
                     "vaultPurpose": "standard",
                     "width": 9,
                     "writeThreshold": 7
-                },
-                {
+                },                {
                     "alertLevel": 8,
                     "allotmentQuota": null,
                     "allotmentUsage": 676824033300480,
@@ -68,6 +67,57 @@
                     "hardQuota": null,
                     "id": 2,
                     "name": "whateverName",
+                    "numGenerations": 1,
+                    "privacyEnabled": true,
+                    "readThreshold": null,
+                    "regionFormatEnabled": true,
+                    "segmentSize": 4194304,
+                    "softQuota": null,
+                    "storagePools": [
+                        {
+                            "storagePool": {
+                                "allottedSize": 0,
+                                "estimateUsableTotalLogicalSizeFromStorage": 576577513041919,
+                                "estimateUsableUsedLogicalSizeFromStorage": 0,
+                                "generations": [
+                                    {
+                                        "generation": {
+                                            "sequence": 0
+                                        }
+                                    }
+                                ],
+                                "id": 1,
+                                "name": "2-storage-pool",
+                                "usableSize": 576577513041919,
+                                "usedLogicalSizeFromStorage": 0,
+                                "usedPhysicalSizeFromStorage": 0
+                            }
+                        }
+                    ],
+                    "threshold": 5,
+                    "type": "object",
+                    "usableSize": 576577513041919,
+                    "usedLogicalSizeFromStorage": 0,
+                    "usedPhysicalSizeFromStorage": 0,
+                    "uuid": "OOOOOOOO-WWWW-AAAA-FFFF-HHHHAAAAJJJV",
+                    "vaultPurpose": "standard",
+                    "width": 9,
+                    "writeThreshold": 7
+                },
+                {
+                    "alertLevel": 8,
+                    "allotmentQuota": null,
+                    "allotmentUsage": 676824033300480,
+                    "allottedSize": 0,
+                    "allowedIps": [],
+                    "creationDate": "Fri, 20 May 2016 18:20:43 +0000",
+                    "description": "test vault for tesing the test",
+                    "estimateObjectCount": 0,
+                    "estimateUsableTotalLogicalSizeFromStorage": 576577513041919,
+                    "estimateUsableUsedLogicalSizeFromStorage": 0,
+                    "hardQuota": null,
+                    "id": 274,
+                    "name": "testVaultName",
                     "numGenerations": 1,
                     "privacyEnabled": true,
                     "readThreshold": null,

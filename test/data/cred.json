@@ -4,6 +4,6 @@
   "aws_access_key_id": "RubbishRubbishRubbish",
   "aws_secret_access_key": "SuperComplexSecretKeyOfTheDoomsDay",
   "host": "257.257.257.257",
-  "public-host": "someothersite.opensciencedatacloud.org",
+  "public_host": "someothersite.opensciencedatacloud.org",
   "port": "443"
 }

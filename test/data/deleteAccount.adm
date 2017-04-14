@@ -1,5 +1,5 @@
 {
-    "password=Password123&id=0": {
+    "password=Password123&id=72": {
         "status_code": "200",
         "text": {
             "responseData": {},
@@ -10,5 +10,10 @@
             },
             "responseStatus": "ok"
         }
+    },
+
+    "password=Password123&id=95": {
+        "status_code": "200",
+        "text": ""
     }
 }
