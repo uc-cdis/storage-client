@@ -22,7 +22,6 @@ def fake_request(method, url, auth, data, verify):
     """
     parsed_url = urlparse(url)
     resource_file = parsed_url.path.split('1.0')[-1]
-    print resource_file
     if data != None:
         parsed_data = urlencode(data)
     else:
@@ -78,7 +77,8 @@ class CleversafeManagerTests(unittest.TestCase):
         user = self.cm.get_user("ResponseSuccess")
         self.assertEqual(user.username, 'ResponseSuccess')
         self.assertEqual(user.permissions, {'testVaultName': 'owner'})
-        self.assertEqual(user.keys[0]['accessKeyId'], 'XXXXXXXXXXXXXXXXXXXXXX')
+        self.assertEqual(user.keys[0]['access_key'], 'XXXXXXXXXXXXXXXXXXXXXX')
+        self.assertEqual(user.keys[0]['secret_key'], 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYY')
         self.assertEqual(user.id, 72)
 
     def test_get_user_inexistent_user(self):
@@ -123,7 +123,7 @@ class CleversafeManagerTests(unittest.TestCase):
         """
         user = self.cm.create_user('testUserToBeDeleted')
         self.assertEqual(user.id, 72)
-        self.assertEqual(user.keys[0]['accessKeyId'], 'XXXXXXXXXXXXXXXXXXXXXX')
+        self.assertEqual(user.keys[0]['access_key'], 'XXXXXXXXXXXXXXXXXXXXXX')
 
     def test_delete_user_success(self):
         """
@@ -136,8 +136,10 @@ class CleversafeManagerTests(unittest.TestCase):
         """
         Successful creation of a key for a specific user
         """
-        response = self.cm.create_keypair("KeyPairUser")
-        self.assertEqual(response, None)
+        keypair = self.cm.create_keypair("KeyPairUser")
+        self.assertEqual(keypair,
+                         {'access_key': u'XXXXXXXXXXXXXX',
+                          'secret_key': u'AAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHNNNNNN'})
 
     def test_delete_keypair_success(self):
         """

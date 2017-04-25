@@ -141,8 +141,8 @@ class CleversafeClient(StorageClient):
             new_user = User(data['name'])
             new_user.id = data['id']
             for key in data['accessKeys']:
-                new_key = {'accessKeyId': key['accessKeyId'],
-                           'secretAccessKey': key['secretAccessKey']}
+                new_key = {'access_key': key['accessKeyId'],
+                           'secret_key': key['secretAccessKey']}
                 new_user.keys.append(new_key)
             vault_roles = []
             for role in data['roles']:
@@ -305,7 +305,7 @@ class CleversafeClient(StorageClient):
         responses_codes = []
         for key in user.keys:
             try:
-                self.delete_keypair(user.username, key['accessKeyId'])
+                self.delete_keypair(user.username, key['access_key'])
             except RequestError as exce:
                 exception = True
                 msg = "Remove all keys failed for one key"
@@ -325,7 +325,10 @@ class CleversafeClient(StorageClient):
         data = {'id': uid, 'action': 'add'}
         response = self.__request('POST', 'editAccountAccessKey.adm', payload=data)
         if response.status_code == 200:
-            return None
+            jsn = json.loads(response.text)
+            keypair = {'access_key': jsn['responseData']['accessKeyId'],
+                       'secret_key': jsn['responseData']['secretAccessKey']}
+            return keypair
         else:
             msg = "Create keypair failed with error code: {0}"
             self.logger.error(msg.format(response.status_code))
