@@ -3,56 +3,14 @@ Module for mocking and testing of the
 cleversafe API client
 """
 
-from os import path, sys
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 import unittest
-from urlparse import urlparse
 from storageclient.cleversafe import CleversafeClient
 import json
 from mock import patch
-from urllib import urlencode
 from storageclient.errors import RequestError, NotFoundError
+from utilstest.code.request_mocker import RequestMocker
+from utilstest.data import createAccount, cred, deleteAccount, editAccountAccessKey, editAccount, editVault, editVaultTemplate, listAccounts, listVaults, viewSystem
 
-def fake_request(method, url, auth, data, verify):
-    """
-    Allows us to mock the calls to the REST API
-    The url will be used as path to the resource file
-    From there, if necessary, the appropriate response data
-    will be collected from a different entry in the json file
-    """
-    parsed_url = urlparse(url)
-    resource_file = parsed_url.path.split('1.0')[-1]
-    if data != None:
-        parsed_data = urlencode(data)
-    else:
-        parsed_data = None
-    parsed_query = parsed_url.query
-    file_path = './test/data/{request}'.format(request=resource_file)
-    resource_file = path.normpath(file_path)
-    with open(resource_file, 'r') as f:
-        resp_dict = json.load(f)
-    if parsed_data != None:
-        response = Response(int(resp_dict[parsed_data]['status_code']), json.dumps(resp_dict[parsed_data]['text']))
-    elif parsed_query != '':
-        response = Response(int(resp_dict[parsed_query]['status_code']), json.dumps(resp_dict[parsed_query]['text']))
-    else:
-        response = Response(int(resp_dict['status_code']), json.dumps(resp_dict['text']))
-    return response
-
-def fake_request_only_failure(method, url, auth, data, verify):
-    """                                                                                                                                                                                                            
-    Used for functions without parameters, since those
-    cannot be distinguished inside the file
-    """ 
-    return Response(404, json.dumps("Error"))
-
-class Response(object):
-    """
-    Mocks a request response
-    """
-    def __init__(self, status_code=0, text=None):
-        self.text = text
-        self.status_code = status_code
 
 class CleversafeManagerTests(unittest.TestCase):
     """
@@ -61,11 +19,20 @@ class CleversafeManagerTests(unittest.TestCase):
     on the data folder.
     """
     def setUp(self):
-        self.patcher = patch('requests.request', fake_request)
+        files = {'createAccount': createAccount.values,
+              'deleteAccount': deleteAccount.values,
+              'editAccountAccessKey': editAccountAccessKey.values,
+              'editAccount': editAccount.values,
+              'editVault': editVault.values,
+              'editVaultTemplate': editVaultTemplate.values,
+              'listAccounts': listAccounts.values,
+              'listVaults': listVaults.values,
+              'viewSystem': viewSystem.values,
+        }
+        self.req_mock = RequestMocker(files)
+        self.patcher = patch('requests.request', self.req_mock.fake_request)
         self.patcher.start()
-        with open('test/data/cred.json', 'r') as f:
-            creds = json.load(f)
-        self.cm = CleversafeClient(creds)
+        self.cm = CleversafeClient(cred.credentials)
 
     def tearDown(self):
         self.patcher.stop()
@@ -174,7 +141,7 @@ class CleversafeManagerTests(unittest.TestCase):
         List users with error response
         """
         self.patcher.stop()
-        self.patcher = patch('requests.request', fake_request_only_failure)
+        self.patcher = patch('requests.request', self.req_mock.fake_request_only_failure)
         self.patcher.start()
         with self.assertRaises(RequestError):
             self.cm.get_user("ResponseError")
@@ -242,7 +209,7 @@ class CleversafeManagerTests(unittest.TestCase):
         List buckets with response error
         """
         self.patcher.stop()
-        self.patcher = patch('requests.request', fake_request_only_failure)
+        self.patcher = patch('requests.request', self.req_mock.fake_request_only_failure)
         self.patcher.start()
         with self.assertRaises(RequestError):
             self.cm.list_buckets()
