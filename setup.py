@@ -13,6 +13,10 @@ setup(
         'requests==2.13.0',
         's3transfer==0.1.10',
         'jmespath==0.9.2',
-        'pbr==2.0.0'
+        'pbr==2.0.0',
+        'cdispyutils'
     ],
+    dependency_links=[
+        "git+ssh://git@github.com/uc-cdis/cdis-python-utils.git#egg=cdispyutils"
+     ],
 )

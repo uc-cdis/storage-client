@@ -1,7 +1,7 @@
 from abc import abstractmethod, abstractproperty, ABCMeta
 from errors import RequestError
 import logging
-
+from cdispyutils.log import get_logger
 
 def handle_request(fun):
     """
@@ -29,7 +29,7 @@ class StorageClient(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, cls_name):
-        self.logger = logging.getLogger(cls_name)
+        self.logger = get_logger(cls_name)
         self.logger.setLevel(logging.DEBUG)
 
     @abstractproperty
