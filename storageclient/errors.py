@@ -7,3 +7,7 @@ class NotFoundError(RequestError):
     def __init__(self, message):
         self.message = message
 
+class ClientSideError(RequestError):
+    def __init__(self, message):
+        self.message = message
+

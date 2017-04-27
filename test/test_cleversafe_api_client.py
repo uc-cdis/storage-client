@@ -4,6 +4,8 @@ cleversafe API client
 """
 
 import unittest
+from os import path, sys
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from storageclient.cleversafe import CleversafeClient
 import json
 from mock import patch
@@ -20,15 +22,15 @@ class CleversafeManagerTests(unittest.TestCase):
     """
     def setUp(self):
         files = {'createAccount': createAccount.values,
-              'deleteAccount': deleteAccount.values,
-              'editAccountAccessKey': editAccountAccessKey.values,
-              'editAccount': editAccount.values,
-              'editVault': editVault.values,
-              'editVaultTemplate': editVaultTemplate.values,
-              'listAccounts': listAccounts.values,
-              'listVaults': listVaults.values,
-              'viewSystem': viewSystem.values,
-        }
+                 'deleteAccount': deleteAccount.values,
+                 'editAccountAccessKey': editAccountAccessKey.values,
+                 'editAccount': editAccount.values,
+                 'editVault': editVault.values,
+                 'editVaultTemplate': editVaultTemplate.values,
+                 'listAccounts': listAccounts.values,
+                 'listVaults': listVaults.values,
+                 'viewSystem': viewSystem.values,
+             }
         self.req_mock = RequestMocker(files)
         self.patcher = patch('requests.request', self.req_mock.fake_request)
         self.patcher.start()
@@ -59,7 +61,7 @@ class CleversafeManagerTests(unittest.TestCase):
         """
         Successful retrieval of a vault
         """
-        response = self.cm._CleversafeClient__get_bucket_by_id(274)
+        response = self.cm._get_bucket_by_id(274)
         vault = json.loads(response.text)
         self.assertEqual(vault['responseData']['vaults'][0]['id'], 274)
 
@@ -67,12 +69,15 @@ class CleversafeManagerTests(unittest.TestCase):
         """
         Successful retrieval of all buckets
         """
-        response = self.cm.list_buckets()
-        vault_list = json.loads(response.text)['responseData']['vaults']
-        self.assertEqual(vault_list[0]['id'], 1)
-        self.assertEqual(vault_list[1]['id'], 2)
-        self.assertEqual(vault_list[2]['id'], 274)
-        self.assertEqual(vault_list[3]['id'], 3)
+        vault_list = self.cm.list_buckets()
+        self.assertEqual(vault_list[0].id, 1)
+        self.assertEqual(vault_list[1].id, 2)
+        self.assertEqual(vault_list[2].id, 274)
+        self.assertEqual(vault_list[3].id, 3)
+        self.assertEqual(vault_list[0].name, "Testforreal")
+        self.assertEqual(vault_list[1].name, "whateverName")
+        self.assertEqual(vault_list[2].name, "testVaultName")
+        self.assertEqual(vault_list[3].name, "testdata3")
 
     def test_list_users_success(self):
         """

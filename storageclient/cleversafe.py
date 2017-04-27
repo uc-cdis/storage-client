@@ -9,7 +9,7 @@ from boto.s3.acl import Grant
 import requests
 from urllib import urlencode
 import json
-from base import StorageClient, User, Bucket
+from base import StorageClient, User, Bucket, handle_request
 from errors import RequestError, NotFoundError
 
 
@@ -25,69 +25,69 @@ class CleversafeClient(StorageClient):
         we need to specify the endpoint in the config
         """
         super(CleversafeClient, self).__init__(__name__)
-        self.__config = config
+        self._config = config
         self._host = config['host']
         self._public_host = config['public_host']
         self._access_key = config['aws_access_key_id']
         self._secret_key = config['aws_secret_access_key']
         self._port = config['port']
-        self.__username = config['username']
-        self.__password = config['password']
-        self.__permissions = {
+        self._username = config['username']
+        self._password = config['password']
+        self._permissions = {
             'read-storage': 'readOnly',
             'write-storage': 'readWrite',
             'create-storage': 'owner',
             'delete-storage': 'owner',
             'disable': 'disable'
         }
-        self.__auth = requests.auth.HTTPBasicAuth(self.__username,
-                                                  self.__password)
+        self._auth = requests.auth.HTTPBasicAuth(self._username,
+                                                  self._password)
         self._conn = connect_s3(
             aws_access_key_id=self._access_key,
             aws_secret_access_key=self._secret_key,
             host=self._public_host,
             calling_format=connection.OrdinaryCallingFormat())
-        self.__bucket_name_id_table = {}
-        self.__update__bucket_name_id_table()
-        self.__user_name_id_table = {}
-        self.__user_id_name_table = {}
-        self.__update__user_name_id_table()
+        self._bucket_name_id_table = {}
+        self._update_bucket_name_id_table()
+        self._user_name_id_table = {}
+        self._user_id_name_table = {}
+        self._update_user_name_id_table()
 
-    def __update__user_name_id_table(self):
+    def _update_user_name_id_table(self):
         """
         Update the name-id translation table for users
         """
-        response = self.__request('GET', 'listAccounts.adm')
+        response = self._request('GET', 'listAccounts.adm')
         if response.status_code == 200:
             jsn = json.loads(response.text)
-            self.__user_name_id_table = {}
+            self._user_name_id_table = {}
             for user in jsn['responseData']['accounts']:
-                self.__user_name_id_table[user['name']] = user['id']
-                self.__user_id_name_table[user['id']] = user['name']
-            self.logger.debug(self.__user_name_id_table)
-            self.logger.debug(self.__user_id_name_table)
+                self._user_name_id_table[user['name']] = user['id']
+                self._user_id_name_table[user['id']] = user['name']
+            self.logger.debug(self._user_name_id_table)
+            self.logger.debug(self._user_id_name_table)
         else:
             msg = "List users failed on update cache with code {0}"
             self.logger.error(msg.format(response.status_code))
             raise RequestError(response.text, response.status_code)
 
-    def __update__bucket_name_id_table(self):
+    def _update_bucket_name_id_table(self):
         """
         Update the name-id translation table for buckets
         """
-        response = self.__request('GET', 'listVaults.adm')
+        response = self._request('GET', 'listVaults.adm')
         if response.status_code == 200:
             jsn = json.loads(response.text)
-            self.__bucket_name_id_table = {}
+            self._bucket_name_id_table = {}
             for user in jsn['responseData']['vaults']:
-                self.__bucket_name_id_table[user['name']] = user['id']
-            self.logger.debug(self.__bucket_name_id_table)
+                self._bucket_name_id_table[user['name']] = user['id']
+            self.logger.debug(self._bucket_name_id_table)
         else:
             msg = "List vaults failed on update cache with code {0}"
             self.logger.error(msg.format(response.status_code))
             raise RequestError(response.text, response.status_code)
 
-    def __get_bucket_id(self, name):
+    def _get_bucket_id(self, name):
         """
         Tries to return the id from the table
         If the cache misses, it updates it and
@@ -96,35 +96,35 @@ class CleversafeClient(StorageClient):
         from the update itself
         """
         try:
-            return self.__bucket_name_id_table[name]
+            return self._bucket_name_id_table[name]
         except KeyError:
-            self.__update__bucket_name_id_table()
-            return self.__bucket_name_id_table[name]
+            self._update_bucket_name_id_table()
+            return self._bucket_name_id_table[name]
 
-    def __get_user_id(self, name):
+    def _get_user_id(self, name):
         """
         Tries to return the id from the table
         If the cache misses, it updates it and
         tries again
         """
         try:
-            return self.__user_name_id_table[name]
+            return self._user_name_id_table[name]
         except KeyError:
-            self.__update__user_name_id_table()
-            return self.__user_name_id_table[name]
+            self._update_user_name_id_table()
+            return self._user_name_id_table[name]
 
-    def __get_user_by_id(self, uid):
+    def _get_user_by_id(self, uid):
         """
         Fetches the user by id from the REST API
         """
-        response = self.__request('GET',
+        response = self._request('GET',
                                   'viewSystem.adm',
                                   itemType='account',
                                   id=uid)
         if response.status_code == 200:
             user = json.loads(response.text)
             try:
-                return self.__populate_user(user['responseData']['accounts'][0])
+                return self._populate_user(user['responseData']['accounts'][0])
             except:
                 # Request OK but User not found
                 return None
@@ -132,7 +132,7 @@ class CleversafeClient(StorageClient):
             self.logger.error("get_user failed with code: {code}".format(code=response.status_code))
             raise RequestError(response.text, response.status_code)
 
-    def __populate_user(self, data):
+    def _populate_user(self, data):
         """
         Populates a new user with the data provided
         in a jsonreponse
@@ -149,7 +149,7 @@ class CleversafeClient(StorageClient):
                 if role['role'] == 'vaultUser':
                     vault_roles = role['vaultPermissions']
             for vault_permission in vault_roles:
-                vault_response = self.__get_bucket_by_id(vault_permission['vault'])
+                vault_response = self._get_bucket_by_id(vault_permission['vault'])
                 vault = json.loads(vault_response.text)
                 new_user.permissions[vault['responseData']['vaults'][0]['name']] = vault_permission['permission']
             return new_user
@@ -158,11 +158,11 @@ class CleversafeClient(StorageClient):
             self.logger.error(msg)
             raise RequestError(key_e.message, "200")
 
-    def __get_bucket_by_id(self, vid):
+    def _get_bucket_by_id(self, vid):
         """
         Get bucket by id
         """
-        response = self.__request('GET', 'viewSystem.adm', itemType='vault', id=vid)
+        response = self._request('GET', 'viewSystem.adm', itemType='vault', id=vid)
         if response.status_code == 200:
             return response
         else:
@@ -170,8 +170,8 @@ class CleversafeClient(StorageClient):
             self.logger.error(msg.format(response.status_code))
             raise RequestError(response.text, response.status_code)
 
-    # @handle_request
-    def __request(self, method, operation, payload=None, **kwargs):
+    @handle_request
+    def _request(self, method, operation, payload=None, **kwargs):
         """
         Compose the request and send it
         """
@@ -179,10 +179,11 @@ class CleversafeClient(StorageClient):
             host=self._host, oper=operation)
         url = base_url + '?' + urlencode(dict(**kwargs))
         return requests.request(method, url,
-                                auth=self.__auth,
+                                auth=self._auth,
                                 data=payload,
                                 verify=False)  # self-signed certificate
 
+    @property
     def provider(self):
         """
         Returns the type of storage
@@ -193,12 +194,12 @@ class CleversafeClient(StorageClient):
         """
         Returns a list with all the users, in User objects
         """
-        response = self.__request('GET', 'listAccounts.adm')
+        response = self._request('GET', 'listAccounts.adm')
         if response.status_code == 200:
             jsn = json.loads(response.text)
             user_list = []
             for user in jsn['responseData']['accounts']:
-                new_user = self.__populate_user(user)
+                new_user = self._populate_user(user)
                 user_list.append(new_user)
             return user_list
         else:
@@ -213,9 +214,9 @@ class CleversafeClient(StorageClient):
         Please keep in mind that buckets must be all lowercase
         """
         #try:
-        vault_id = self.__get_bucket_id(bucket)
-        vault = json.loads(self.__get_bucket_by_id(vault_id).text)
-        user_id = self.__get_user_id(username)
+        vault_id = self._get_bucket_id(bucket)
+        vault = json.loads(self._get_bucket_by_id(vault_id).text)
+        user_id = self._get_user_id(username)
         for permission in vault['responseData']['vaults'][0]['accessPermissions']:
             if permission['principal']['id'] == user_id:
                 return True
@@ -233,18 +234,23 @@ class CleversafeClient(StorageClient):
         - emailxs
         """
         try:
-            uid = self.__get_user_id(name)
+            uid = self._get_user_id(name)
         except KeyError:
             return None
-        return self.__get_user_by_id(uid)
+        return self._get_user_by_id(uid)
 
     def list_buckets(self):
         """
         Lists all the vaults(buckets) and their information
         """
-        response = self.__request('GET', 'listVaults.adm')
+        response = self._request('GET', 'listVaults.adm')
         if response.status_code == 200:
-            return response
+            buckets = json.loads(response.text)
+            bucket_list = []
+            for buck in buckets['responseData']['vaults']:
+                new_bucket = Bucket(buck['name'], buck['id'])
+                bucket_list.append(new_bucket)
+            return bucket_list
         else:
             self.logger.error("List buckets failed with code: {code}".format(code=response.status_code))
             raise RequestError(response.text, response.status_code)
@@ -255,12 +261,12 @@ class CleversafeClient(StorageClient):
         TODO Input sanitazion for parameters
         """
         data = {'name': name, 'usingPassword': 'false', 'rolesMap[operator]': 'true'}
-        response = self.__request('POST', 'createAccount.adm', payload=data)
+        response = self._request('POST', 'createAccount.adm', payload=data)
         if response.status_code == 200:
             parsed_reply = json.loads(response.text)
             user_id = parsed_reply['responseData']['id']
-            self.__update__user_name_id_table()
-            return self.__get_user_by_id(user_id)
+            self._update_user_name_id_table()
+            return self._get_user_by_id(user_id)
         else:
             self.logger.error("User creation failed with code: {0}".format(response.status_code))
             raise RequestError(response.text, response.status_code)
@@ -270,11 +276,11 @@ class CleversafeClient(StorageClient):
         Eliminate a user account
         Requires the password from the account requesting the deletion
         """
-        uid = self.__get_user_id(name)
-        data = {'id': uid, 'password': self.__config['password']}
-        response = self.__request('POST', 'deleteAccount.adm', payload=data)
+        uid = self._get_user_id(name)
+        data = {'id': uid, 'password': self._config['password']}
+        response = self._request('POST', 'deleteAccount.adm', payload=data)
         if response.status_code == 200:
-            self.__update__user_name_id_table()
+            self._update_user_name_id_table()
             return None
         else:
             self.logger.error("Delete user failed with code: {0}".format(response.status_code))
@@ -284,9 +290,9 @@ class CleversafeClient(StorageClient):
         """
         Remove the give key/secret that match the key id
         """
-        uid = self.__get_user_id(name)
+        uid = self._get_user_id(name)
         data = {'id': uid, 'accessKeyId': access_key, 'action': 'remove'}
-        response = self.__request('POST', 'editAccountAccessKey.adm', payload=data)
+        response = self._request('POST', 'editAccountAccessKey.adm', payload=data)
         if response.status_code == 200:
             return None
         else:
@@ -321,9 +327,9 @@ class CleversafeClient(StorageClient):
         """
         Add a new key/secret pair
         """
-        uid = self.__get_user_id(name)
+        uid = self._get_user_id(name)
         data = {'id': uid, 'action': 'add'}
-        response = self.__request('POST', 'editAccountAccessKey.adm', payload=data)
+        response = self._request('POST', 'editAccountAccessKey.adm', payload=data)
         if response.status_code == 200:
             jsn = json.loads(response.text)
             keypair = {'access_key': jsn['responseData']['accessKeyId'],
@@ -339,11 +345,11 @@ class CleversafeClient(StorageClient):
         Retrieves the information from the bucket matching the name
         """
         try:
-            bucket_id = self.__get_bucket_id(bucket)
+            bucket_id = self._get_bucket_id(bucket)
             """at this point we have all we need for the initial
             Bucket object, but for coherence, we keep this last call.
             Feel free to get more information from response.text"""
-            response = self.__get_bucket_by_id(bucket_id)
+            response = self._get_bucket_by_id(bucket_id)
             return Bucket(bucket, bucket_id)
         except KeyError as exce:
             self.logger.error("Get bucket not found on cache")
@@ -384,7 +390,7 @@ class CleversafeClient(StorageClient):
                           **creds)
         try:
             bucket = conn.create_bucket(bucket_name)
-            self.__update__bucket_name_id_table()
+            self._update_bucket_name_id_table()
             return bucket
         except S3ResponseError as exce:
             msg = "Create bucket failed with error code: {0}"
@@ -400,7 +406,7 @@ class CleversafeClient(StorageClient):
         """
         data = kwargs
         data['id'] = default_template_id
-        response = self.__request('POST', 'editVaultTemplate.adm',
+        response = self._request('POST', 'editVaultTemplate.adm',
                                   payload=data)
         if response.status_code == 200:
             return response
@@ -414,12 +420,13 @@ class CleversafeClient(StorageClient):
         Get an acl object and add the missing credentials
         to the one retrieved from the target bucket
         new_grants contains a list of users and permissions
+        [('user1', ['read-storage', 'write-storage']),...]
         """
         user_id_list = []
         for user in new_grants:
-            user_id_list.append(self.__get_user_id(user[0]))
-        bucket_id = self.__get_bucket_id(bucket)
-        response = self.__get_bucket_by_id(bucket_id)
+            user_id_list.append(self._get_user_id(user[0]))
+        bucket_id = self._get_bucket_id(bucket)
+        response = self._get_bucket_by_id(bucket_id)
         vault = json.loads(response.text)['responseData']['vaults'][0]
         disable = []
         for permission in vault['accessPermissions']:
@@ -427,7 +434,7 @@ class CleversafeClient(StorageClient):
             permit_type = permission['permission']
             if uid not in user_id_list or\
                permit_type == "owner":
-                disable.append((self.__user_id_name_table[uid],["disable"]))
+                disable.append((self._user_id_name_table[uid],["disable"]))
         for user in disable:
             self.add_bucket_acl(bucket, user[0], user[1])
         for user in new_grants:
@@ -437,9 +444,9 @@ class CleversafeClient(StorageClient):
         """
         Set qouta for the entire bucket/vault
         """
-        bid = self.__get_bucket_id(bucket)
+        bid = self._get_bucket_id(bucket)
         data = {'hardQuotaSize': quota, 'hardQuotaUnit': quota_unit, 'id': bid}
-        response = self.__request('POST', 'editVault.adm', payload=data)
+        response = self._request('POST', 'editVault.adm', payload=data)
         if response.status_code == 200:
             return response
         else:
@@ -453,19 +460,19 @@ class CleversafeClient(StorageClient):
         """
         try:
             bucket_param = 'vaultUserPermissions[{0}]'.format(
-                self.__get_bucket_id(bucket))
+                self._get_bucket_id(bucket))
         except KeyError:
             msg = "Bucket {0} wasn't found on the database"
             self.logger.error(msg.format(bucket))
             raise NotFoundError(msg.format(bucket))
         try:
-            data = {'id': self.__get_user_id(username), bucket_param: self.__permissions[access[0]]}
+            data = {'id': self._get_user_id(username), bucket_param: self._permissions[access[0]]}
         except KeyError:
             msg = "User {0} wasn't found on the database"
             self.logger.error(msg.format(username))
             raise NotFoundError(msg.format(username))
         data['rolesMap[vaultProvisioner]'] = 'true'
-        response = self.__request('POST', 'editAccount.adm', payload=data)
+        response = self._request('POST', 'editAccount.adm', payload=data)
         if response.status_code != 200:
             msg = "Error trying to change buket permissions for user {0}"
             self.logger.error(msg.format(username))

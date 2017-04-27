@@ -10,13 +10,16 @@ def handle_request(fun):
 
     def wrapper(self, *args, **kwargs):
         """
-        We raise an internal error when
+        We raise an exception when
+        the code on the client side fails
+        Server side errors are taken care of
+        through response codes
         """
         try:
             return fun(self, *args, **kwargs)
         except Exception as req_exception:
             self.logger.exception("internal error")
-            raise RequestError(req_exception.message)
+            raise ClientSideError(req_exception.message)
 
     return wrapper
 
@@ -113,8 +116,8 @@ class StorageClient(object):
     @abstractmethod
     def list_buckets(self):
         """
-        Return a list of bucket names
-        : ['bucket1', bucket2'...]
+        Return a list of Bucket objects
+        : [bucket1, bucket2,...]
         """
         raise NotImplemented()
 
