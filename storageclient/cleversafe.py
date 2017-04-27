@@ -36,8 +36,7 @@ class CleversafeClient(StorageClient):
         self._permissions = {
             'read-storage': 'readOnly',
             'write-storage': 'readWrite',
-            'create-storage': 'owner',
-            'delete-storage': 'owner',
+            'admin-storage': 'owner',
             'disable': 'disable'
         }
         self._auth = requests.auth.HTTPBasicAuth(self._username,
@@ -471,7 +470,8 @@ class CleversafeClient(StorageClient):
             msg = "User {0} wasn't found on the database"
             self.logger.error(msg.format(username))
             raise NotFoundError(msg.format(username))
-        data['rolesMap[vaultProvisioner]'] = 'true'
+        if self._permissions[access[0]] == 'admin-storage':
+            data['rolesMap[vaultProvisioner]'] = 'true'
         response = self._request('POST', 'editAccount.adm', payload=data)
         if response.status_code != 200:
             msg = "Error trying to change buket permissions for user {0}"

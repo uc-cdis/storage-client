@@ -1,5 +1,5 @@
 from abc import abstractmethod, abstractproperty, ABCMeta
-from errors import RequestError
+from errors import ClientSideError
 import logging
 from cdispyutils.log import get_logger
 
