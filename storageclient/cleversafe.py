@@ -213,7 +213,6 @@ class CleversafeClient(StorageClient):
         a certain bucket.
         Please keep in mind that buckets must be all lowercase
         """
-        #try:
         vault_id = self._get_bucket_id(bucket)
         vault = json.loads(self._get_bucket_by_id(vault_id).text)
         user_id = self._get_user_id(username)
