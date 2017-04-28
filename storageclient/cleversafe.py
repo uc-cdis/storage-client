@@ -465,7 +465,7 @@ class CleversafeClient(StorageClient):
             self.logger.error(msg.format(bucket))
             raise NotFoundError(msg.format(bucket))
         try:
-            access_lvl = self._permissions_order[access[0]]
+            access_lvl = max(self._permissions_order[role] for role in access)
             data = {'id': self._get_user_id(username), bucket_param: self._permissions_value[access_lvl]}
             if access_lvl == 'admin-storage':
                 data['rolesMap[vaultProvisioner]'] = 'true'
