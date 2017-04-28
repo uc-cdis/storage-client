@@ -33,12 +33,13 @@ class CleversafeClient(StorageClient):
         self._port = config['port']
         self._username = config['username']
         self._password = config['password']
-        self._permissions = {
-            'read-storage': 'readOnly',
-            'write-storage': 'readWrite',
-            'admin-storage': 'owner',
-            'disable': 'disable'
+        self._permissions_order = {
+            'read-storage': 1,
+            'write-storage': 2,
+            'admin-storage': 3,
+            'disable': 0
         }
+        self._permissions_value =['disable', 'readOnly', 'readWrite', 'owner']
         self._auth = requests.auth.HTTPBasicAuth(self._username,
                                                   self._password)
         self._conn = connect_s3(
@@ -365,7 +366,7 @@ class CleversafeClient(StorageClient):
         if user != None:
             return user
         else:
-            return self.create_user()
+            return self.create_user(name)
 
     def get_or_create_bucket(
             self, access_key, secret_key, bucket_name):
@@ -465,13 +466,14 @@ class CleversafeClient(StorageClient):
             self.logger.error(msg.format(bucket))
             raise NotFoundError(msg.format(bucket))
         try:
-            data = {'id': self._get_user_id(username), bucket_param: self._permissions[access[0]]}
+            access_lvl = self._permissions_order[access[0]]
+            data = {'id': self._get_user_id(username), bucket_param: self._permissions_value[access_lvl]}
+            if access_lvl == 'admin-storage':
+                data['rolesMap[vaultProvisioner]'] = 'true'
         except KeyError:
             msg = "User {0} wasn't found on the database"
             self.logger.error(msg.format(username))
             raise NotFoundError(msg.format(username))
-        if self._permissions[access[0]] == 'admin-storage':
-            data['rolesMap[vaultProvisioner]'] = 'true'
         response = self._request('POST', 'editAccount.adm', payload=data)
         if response.status_code != 200:
             msg = "Error trying to change buket permissions for user {0}"
