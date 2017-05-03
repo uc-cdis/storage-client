@@ -260,7 +260,7 @@ class CleversafeClient(StorageClient):
         Creates a user
         TODO Input sanitazion for parameters
         """
-        data = {'name': name, 'usingPassword': 'false', 'rolesMap[operator]': 'true'}
+        data = {'name': name, 'usingPassword': 'false'}
         response = self._request('POST', 'createAccount.adm', payload=data)
         if response.status_code == 200:
             parsed_reply = json.loads(response.text)
@@ -480,3 +480,16 @@ class CleversafeClient(StorageClient):
             msg = "Error trying to change buket permissions for user {0}"
             self.logger.error(msg.format(username))
             raise RequestError(msg.format(username), response.status_code)
+
+    def delete_bucket(self, bucket_name):
+        """
+        Delete a bucket
+        """
+        bucket_id = self._get_bucket_id(bucket_name)
+        data = {'id': bucket_id, 'password': self._password}
+        response = self._request('POST', 'deleteVault.adm', payload=data)
+        self._update_bucket_name_id_table()
+        if response.status_code != 200:
+            msg = "Error trying to delete vault {bucket}"
+            self.logger.error(msg.format(bucket_name))
+            raise RequestError(msg.format(bucket_name), response.status_code)
