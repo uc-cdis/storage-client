@@ -30,7 +30,6 @@ class CleversafeClient(StorageClient):
         self._public_host = config['public_host']
         self._access_key = config['aws_access_key_id']
         self._secret_key = config['aws_secret_access_key']
-        self._port = config['port']
         self._username = config['username']
         self._password = config['password']
         self._permissions_order = {
@@ -46,7 +45,6 @@ class CleversafeClient(StorageClient):
             aws_access_key_id=self._access_key,
             aws_secret_access_key=self._secret_key,
             host=self._public_host,
-            port=self._port,
             calling_format=connection.OrdinaryCallingFormat())
         self._bucket_name_id_table = {}
         self._update_bucket_name_id_table()
@@ -384,7 +382,7 @@ class CleversafeClient(StorageClient):
         """
         Requires a default template created on cleversafe
         """
-        creds = {'host': self._public_host}#, 'port': self._port}
+        creds = {'host': self._public_host}
         creds['aws_access_key_id'] = access_key
         creds['aws_secret_access_key'] = secret_key
         conn = connect_s3(calling_format=connection.OrdinaryCallingFormat(),
