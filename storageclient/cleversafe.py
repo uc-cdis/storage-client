@@ -37,15 +37,16 @@ class CleversafeClient(StorageClient):
             'read-storage': 1,
             'write-storage': 2,
             'admin-storage': 3,
-            'disable': 0
+            'disabled': 0
         }
-        self._permissions_value =['disable', 'readOnly', 'readWrite', 'owner']
+        self._permissions_value =['disabled', 'readOnly', 'readWrite', 'owner']
         self._auth = requests.auth.HTTPBasicAuth(self._username,
                                                   self._password)
         self._conn = connect_s3(
             aws_access_key_id=self._access_key,
             aws_secret_access_key=self._secret_key,
             host=self._public_host,
+            port=self._port,
             calling_format=connection.OrdinaryCallingFormat())
         self._bucket_name_id_table = {}
         self._update_bucket_name_id_table()
@@ -247,7 +248,7 @@ class CleversafeClient(StorageClient):
             buckets = json.loads(response.text)
             bucket_list = []
             for buck in buckets['responseData']['vaults']:
-                new_bucket = Bucket(buck['name'], buck['id'])
+                new_bucket = Bucket(buck['name'], buck['id'], buck['hardQuota'])
                 bucket_list.append(new_bucket)
             return bucket_list
         else:
@@ -349,7 +350,8 @@ class CleversafeClient(StorageClient):
             Bucket object, but for coherence, we keep this last call.
             Feel free to get more information from response.text"""
             response = self._get_bucket_by_id(bucket_id)
-            return Bucket(bucket, bucket_id)
+            vault = json.loads(response.text)
+            return Bucket(bucket, bucket_id, vault['responseData']['vaults'][0]['hardQuota'])
         except KeyError as exce:
             self.logger.error("Get bucket not found on cache")
             raise RequestError(exce.message, "NA")
@@ -382,7 +384,7 @@ class CleversafeClient(StorageClient):
         """
         Requires a default template created on cleversafe
         """
-        creds = {'host': self._public_host}
+        creds = {'host': self._public_host}#, 'port': self._port}
         creds['aws_access_key_id'] = access_key
         creds['aws_secret_access_key'] = secret_key
         conn = connect_s3(calling_format=connection.OrdinaryCallingFormat(),
@@ -433,7 +435,7 @@ class CleversafeClient(StorageClient):
             permit_type = permission['permission']
             if uid not in user_id_list or\
                permit_type == "owner":
-                disable.append((self._user_id_name_table[uid],["disable"]))
+                disable.append((self._user_id_name_table[uid],["disabled"]))
         for user in disable:
             self.add_bucket_acl(bucket, user[0], user[1])
         for user in new_grants:
@@ -467,7 +469,7 @@ class CleversafeClient(StorageClient):
         try:
             access_lvl = max(self._permissions_order[role] for role in access)
             data = {'id': self._get_user_id(username), bucket_param: self._permissions_value[access_lvl]}
-            if access_lvl == 'admin-storage':
+            if access_lvl == 3:
                 data['rolesMap[vaultProvisioner]'] = 'true'
         except KeyError:
             msg = "User {0} wasn't found on the database"

@@ -179,10 +179,11 @@ class User(object):
         self.id = None
 
 class Bucket(object):
-    def __init__(self, name, bucket_id):
+    def __init__(self, name, bucket_id, quota):
         """
         Simple bucket representation
+        Quota is in TiBs or such units
         """
         self.name = name 
         self.id = bucket_id
-
+        self.quota = quota
