@@ -29,6 +29,7 @@ class TestStorage(unittest.TestCase):
 
     def test_list_buckets_success(self):
         """
+        Successful listing of buckets
         We test it by checking that
         at least the two test buckets we created are
         in the list
@@ -40,6 +41,7 @@ class TestStorage(unittest.TestCase):
                 
     def test_list_users_success(self):
         """
+        Sucessful listing of users
         We test it by checking that 
         there are user objects in the list,
         at least the two that we have created
@@ -62,7 +64,8 @@ class TestStorage(unittest.TestCase):
 
     def test_delete_user_success(self):
         """
-        Used once to check that it works,
+        Used once to delete users
+        and check that it works,
         but we shouldn't be deleting users
         that we will need to test, or we run the risk
         of going through all the auto generated numbers
@@ -71,6 +74,7 @@ class TestStorage(unittest.TestCase):
 
     def test_create_and_delete_keypair_success(self):
         """
+        Successful creation and deletion of keys
         Check that the creation and deletion of
         keys work. We check that we keep the same
         status that we got at the start
@@ -86,10 +90,16 @@ class TestStorage(unittest.TestCase):
         
 
     def test_delete_keypair_inexistent_key(self):
+        """
+        Error handling of inexistent user
+        """
         with self.assertRaises(errors.RequestError):
             self.cc.delete_keypair('storage_test_user', 'inexistent_key')
 
     def test_set_bucket_quota_succes(self):
+        """
+        Successful change of quota
+        """
         bucket = self.cc.get_bucket('teststoragebucket')
         old_quota = bucket.quota
         if old_quota != None:
@@ -107,6 +117,9 @@ class TestStorage(unittest.TestCase):
         self.assertEqual(bucket.quota, old_quota)
         
     def test_delete_all_keypairs_success(self):
+        """
+        Successful deletion of all keypairs
+        """
         user = self.cc.get_user('storage_test_user')
         original_keys = user.keys
         keypair_1 = self.cc.create_keypair(user.username)
@@ -119,35 +132,69 @@ class TestStorage(unittest.TestCase):
         self.assertEqual(user.keys, []) 
 
     def test_edit_bucket_template_success(self):
+        """
+        Successful modification of a template
+        This method has no way of knowing if the
+        data on the template has changed,
+        so once checked once that it works,
+        it is here only to check that we haven't
+        broken the template
+        """
         self.cc.edit_bucket_template(1, description="This is a test description")
         self.cc.edit_bucket_template(1, description="")
 
     def test_delete_user_inexistent_user(self):
+        """
+        Error handling of deletion of an inexistent user
+        """
         with self.assertRaises(KeyError):
             self.cc.delete_user("this_user_will_never_exist")
 
     def test_add_bucket_acl_user_not_found_error(self):
+        """
+        Error handling of adding a bucket ACL on an inexistent user
+        """
         with self.assertRaises(errors.NotFoundError):
             self.cc.add_bucket_acl("teststoragebucket", "non_existent_user", ['read-storage'])
 
     def test_add_bucket_acl_bucket_not_found_error(self):
+        """
+        Error handling on adding a bucket ACL on an inexistent bucket
+        """
         with self.assertRaises(errors.NotFoundError):
             self.cc.add_bucket_acl("non_existent_bucket", "test_storage_user", ['read-storage'])
 
     def test_add_bucket_acl_success(self):
+        """
+        Successful addition of an ACL on a bucket
+        This method has no way of retrieving the information
+        TODO add writing test on the bucket to check permissions
+        """
         self.cc.add_bucket_acl('teststoragebucket', 'storage_test_user',['read-storage'])
         self.cc.add_bucket_acl('teststoragebucket', 'storage_test_user',['disabled'])
 
     def test_get_bucket_success(self):
+        """
+        Successful retrieval of a bucket
+        """
         bucket = self.cc.get_bucket('teststoragebucket')
         self.assertEqual(bucket.name, 'teststoragebucket')
         self.assertEqual(bucket.id, 7)
         self.assertEqual(bucket.quota, 2097152)
 
     def test_get_bucket_response_error(self):
+        """
+        Error handling on getting an inexistent bucket
+        """
         with self.assertRaises(errors.RequestError):
             self.cc.get_bucket("inexistent_bucket")
 
     def test_update_bucket_acl_success(self):
+        """
+        Successful updating of a bucket ACL
+        This method has no way of retrieving the modified
+        information
+        TODO add a writing check
+        """
         self.cc.update_bucket_acl('teststoragebucket', [('storage_test_user',['read-storage'])])
         self.cc.update_bucket_acl('teststoragebucket', [('storage_test_user',['disabled'])])

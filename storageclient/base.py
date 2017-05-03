@@ -37,7 +37,8 @@ class StorageClient(object):
         """
         Name of the storage provider. eg: ceph
         """
-        raise NotImplementedError()
+        msg = "Provider not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def get_user(self, username):
@@ -45,7 +46,8 @@ class StorageClient(object):
         Get a user
         :returns: a User object if the user exists, else None
         """
-        raise NotImplementedError()
+        msg = "get_user not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def delete_user(self, username):
@@ -55,7 +57,8 @@ class StorageClient(object):
         :raise:
             :NotFound: the user is not found
         """
-        raise NotImplementedError()
+        msg = "delete_user not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def create_user(self, username):
@@ -63,7 +66,8 @@ class StorageClient(object):
         Create a user
         :returns: User object
         """
-        raise NotImplementedError()
+        msg = "create_user not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def list_users(self):
@@ -71,7 +75,8 @@ class StorageClient(object):
         List users
         :returns: a list of User objects
         """
-        raise NotImplementedError()
+        msg = "list_users not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def get_or_create_user(self, username):
@@ -80,7 +85,8 @@ class StorageClient(object):
         If the user is not found, a new one
         is created and returned
         """
-        raise NotImplementedError()
+        msg = "get_or_create_user not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def create_keypair(self, username):
@@ -88,7 +94,8 @@ class StorageClient(object):
         Creates a keypair for the user, and
         returns it
         """
-        raise NotImplemented()
+        msg = "create_keypair not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def delete_keypair(self, username, access_key):
@@ -96,14 +103,16 @@ class StorageClient(object):
         Deletes a keypair from the user and
         doesn't return anything
         """
-        raise NotImplemented()
+        msg = "delete_keypair not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def add_bucket_acl(self, bucket, username, access=None):
         """
         Tries to grant a user access to a bucket
         """
-        raise NotImplemented()
+        msg = "add_bucket_acl not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def has_bucket_access(self, bucket, user_id):
@@ -111,7 +120,8 @@ class StorageClient(object):
         Check if the user appears in the acl
         : returns Bool
         """
-        raise NotImplemented()
+        msg = "has_bucket_access not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def list_buckets(self):
@@ -119,7 +129,8 @@ class StorageClient(object):
         Return a list of Bucket objects
         : [bucket1, bucket2,...]
         """
-        raise NotImplemented()
+        msg = "list_buckets not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def delete_all_keypairs(self, user):
@@ -127,14 +138,16 @@ class StorageClient(object):
         Remove all the keys from a user
         : returns None
         """
-        raise NotImplemented()
+        msg = "delete_all_keypairs not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def get_bucket(self, bucket):
         """
         Return a bucket from the storage
         """
-        raise NotImplemented()
+        msg = "get_bucket not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def get_or_create_bucket(self, access_key, secret_key, bucket):
@@ -142,7 +155,8 @@ class StorageClient(object):
         Tries to retrieve a bucket and if fit fails,
         creates and returns one
         """
-        raise NotImplemented()
+        msg = "get_or_create_bucket not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def edit_bucket_template(self, template_id, **kwargs):
@@ -150,21 +164,24 @@ class StorageClient(object):
         Change the parameters for the template used to create
         the buckets
         """
-        raise NotImplemented()
+        msg = "edit_bucket_template not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def update_bucket_acl(self, bucket, user_list):
         """
         Add acl's for the list of users
         """
-        raise NotImplemented()
+        msg = "update_bucket_acl not implemented"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def set_bucket_quota(self, bucket, quota_unit, quota):
         """
         Set quota for the entire bucket
         """
-        raise NotImplemented
+        msg = "set_bucket_quota not implemented"
+        raise NotImplementedError(msg)
 
 
 class User(object):
