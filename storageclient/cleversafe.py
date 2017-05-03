@@ -30,16 +30,15 @@ class CleversafeClient(StorageClient):
         self._public_host = config['public_host']
         self._access_key = config['aws_access_key_id']
         self._secret_key = config['aws_secret_access_key']
-        self._port = config['port']
         self._username = config['username']
         self._password = config['password']
         self._permissions_order = {
             'read-storage': 1,
             'write-storage': 2,
             'admin-storage': 3,
-            'disable': 0
+            'disabled': 0
         }
-        self._permissions_value =['disable', 'readOnly', 'readWrite', 'owner']
+        self._permissions_value =['disabled', 'readOnly', 'readWrite', 'owner']
         self._auth = requests.auth.HTTPBasicAuth(self._username,
                                                   self._password)
         self._conn = connect_s3(
@@ -247,7 +246,7 @@ class CleversafeClient(StorageClient):
             buckets = json.loads(response.text)
             bucket_list = []
             for buck in buckets['responseData']['vaults']:
-                new_bucket = Bucket(buck['name'], buck['id'])
+                new_bucket = Bucket(buck['name'], buck['id'], buck['hardQuota'])
                 bucket_list.append(new_bucket)
             return bucket_list
         else:
@@ -259,7 +258,7 @@ class CleversafeClient(StorageClient):
         Creates a user
         TODO Input sanitazion for parameters
         """
-        data = {'name': name, 'usingPassword': 'false', 'rolesMap[operator]': 'true'}
+        data = {'name': name, 'usingPassword': 'false'}
         response = self._request('POST', 'createAccount.adm', payload=data)
         if response.status_code == 200:
             parsed_reply = json.loads(response.text)
@@ -349,7 +348,8 @@ class CleversafeClient(StorageClient):
             Bucket object, but for coherence, we keep this last call.
             Feel free to get more information from response.text"""
             response = self._get_bucket_by_id(bucket_id)
-            return Bucket(bucket, bucket_id)
+            vault = json.loads(response.text)
+            return Bucket(bucket, bucket_id, vault['responseData']['vaults'][0]['hardQuota'])
         except KeyError as exce:
             self.logger.error("Get bucket not found on cache")
             raise RequestError(exce.message, "NA")
@@ -433,7 +433,7 @@ class CleversafeClient(StorageClient):
             permit_type = permission['permission']
             if uid not in user_id_list or\
                permit_type == "owner":
-                disable.append((self._user_id_name_table[uid],["disable"]))
+                disable.append((self._user_id_name_table[uid],["disabled"]))
         for user in disable:
             self.add_bucket_acl(bucket, user[0], user[1])
         for user in new_grants:
@@ -467,7 +467,7 @@ class CleversafeClient(StorageClient):
         try:
             access_lvl = max(self._permissions_order[role] for role in access)
             data = {'id': self._get_user_id(username), bucket_param: self._permissions_value[access_lvl]}
-            if access_lvl == 'admin-storage':
+            if access_lvl == 3:
                 data['rolesMap[vaultProvisioner]'] = 'true'
         except KeyError:
             msg = "User {0} wasn't found on the database"
@@ -478,3 +478,16 @@ class CleversafeClient(StorageClient):
             msg = "Error trying to change buket permissions for user {0}"
             self.logger.error(msg.format(username))
             raise RequestError(msg.format(username), response.status_code)
+
+    def delete_bucket(self, bucket_name):
+        """
+        Delete a bucket
+        """
+        bucket_id = self._get_bucket_id(bucket_name)
+        data = {'id': bucket_id, 'password': self._password}
+        response = self._request('POST', 'deleteVault.adm', payload=data)
+        self._update_bucket_name_id_table()
+        if response.status_code != 200:
+            msg = "Error trying to delete vault {bucket}"
+            self.logger.error(msg.format(bucket_name))
+            raise RequestError(msg.format(bucket_name), response.status_code)
