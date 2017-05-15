@@ -275,3 +275,25 @@ class CleversafeManagerTests(unittest.TestCase):
         """
         with self.assertRaises(RequestError):
             self.cm.update_bucket_acl("testVaultName", [('KeyPairCreationUser', ['read-storage'])])
+
+    def test_delete_bucket_acl_success(self):
+        """
+        Successful deletion of an acl
+        """
+        response = self.cm.delete_bucket_acl('testVaultName', 'ResponseSuccess')
+        self.assertEqual(response, None)
+
+
+    def test_delete_bucket_acl_empty_name(self):
+        """
+        Error handling when deleting an empty user from a bucket
+        """
+        with self.assertRaises(RequestError):
+            self.cm.delete_bucket_acl('testVaultName', '')
+
+    def test_delete_bucket_acl_empty_bucket(self):
+        """
+        Error handling when deleting an empty bucket
+        """
+        with self.assertRaises(RequestError):
+            self.cm.delete_bucket_acl('', 'ResponseSuccess')

@@ -183,6 +183,14 @@ class StorageClient(object):
         msg = "set_bucket_quota not implemented"
         raise NotImplementedError(msg)
 
+    @abstractmethod
+    def delete_bucket_acl(self, bucket, user):
+        """
+        Set quota for the entire bucket
+        """
+        msg = "delete_bucket_acl not implemented"
+        raise NotImplementedError(msg)
+
 
 class User(object):
     def __init__(self, username):
