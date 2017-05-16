@@ -10,8 +10,8 @@ from storageclient.cleversafe import CleversafeClient
 import json
 from mock import patch
 from storageclient.errors import RequestError, NotFoundError
-from utilstest.code.request_mocker import RequestMocker
-from utilstest.data import createAccount, cred, deleteAccount, editAccountAccessKey, editAccount, editVault, editVaultTemplate, listAccounts, listVaults, viewSystem
+from cdisutilstest.code.request_mocker import RequestMocker
+from cdisutilstest.data import createAccount, cred, deleteAccount, editAccountAccessKey, editAccount, editVault, editVaultTemplate, listAccounts, listVaults, viewSystem
 
 
 class CleversafeManagerTests(unittest.TestCase):
