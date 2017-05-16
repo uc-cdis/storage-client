@@ -432,7 +432,7 @@ class CleversafeClient(StorageClient):
             uid = permission['principal']['id']
             permit_type = permission['permission']
             if uid not in user_id_list or\
-               permit_type == "owner":
+               permit_type != "owner":
                 disable.append((self._user_id_name_table[uid],["disabled"]))
         for user in disable:
             self.add_bucket_acl(bucket, user[0], user[1])
@@ -491,3 +491,10 @@ class CleversafeClient(StorageClient):
             msg = "Error trying to delete vault {bucket}"
             self.logger.error(msg.format(bucket_name))
             raise RequestError(msg.format(bucket_name), response.status_code)
+
+    def delete_bucket_acl(self, bucket, username):
+        """
+        Remove permission from a bucket
+        """
+        self.add_bucket_acl(bucket, username, ['disabled'])
+        return None

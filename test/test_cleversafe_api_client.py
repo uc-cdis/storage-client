@@ -10,8 +10,8 @@ from storageclient.cleversafe import CleversafeClient
 import json
 from mock import patch
 from storageclient.errors import RequestError, NotFoundError
-from utilstest.code.request_mocker import RequestMocker
-from utilstest.data import createAccount, cred, deleteAccount, editAccountAccessKey, editAccount, editVault, editVaultTemplate, listAccounts, listVaults, viewSystem
+from cdisutilstest.code.request_mocker import RequestMocker
+from cdisutilstest.data import createAccount, cred, deleteAccount, editAccountAccessKey, editAccount, editVault, editVaultTemplate, listAccounts, listVaults, viewSystem
 
 
 class CleversafeManagerTests(unittest.TestCase):
@@ -275,3 +275,25 @@ class CleversafeManagerTests(unittest.TestCase):
         """
         with self.assertRaises(RequestError):
             self.cm.update_bucket_acl("testVaultName", [('KeyPairCreationUser', ['read-storage'])])
+
+    def test_delete_bucket_acl_success(self):
+        """
+        Successful deletion of an acl
+        """
+        response = self.cm.delete_bucket_acl('testVaultName', 'ResponseSuccess')
+        self.assertEqual(response, None)
+
+
+    def test_delete_bucket_acl_empty_name(self):
+        """
+        Error handling when deleting an empty user from a bucket
+        """
+        with self.assertRaises(RequestError):
+            self.cm.delete_bucket_acl('testVaultName', '')
+
+    def test_delete_bucket_acl_empty_bucket(self):
+        """
+        Error handling when deleting an empty bucket
+        """
+        with self.assertRaises(RequestError):
+            self.cm.delete_bucket_acl('', 'ResponseSuccess')
