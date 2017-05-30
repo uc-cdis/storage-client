@@ -150,7 +150,7 @@ class StorageClient(object):
         raise NotImplementedError(msg)
 
     @abstractmethod
-    def get_or_create_bucket(self, bucket, access_key, secret_key):
+    def get_or_create_bucket(self, bucket, access_key=None, secret_key=None):
         """
         Tries to retrieve a bucket and if fit fails,
         creates and returns one
@@ -159,7 +159,7 @@ class StorageClient(object):
         raise NotImplementedError(msg)
 
     @abstractmethod
-    def get_bucket(self, bucket, access_key, secret_key):
+    def get_bucket(self, bucket, access_key=None, secret_key=None):
         """
         Tries to retrieve a bucket and if fit fails,
         creates and returns one
