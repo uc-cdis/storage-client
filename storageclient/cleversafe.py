@@ -368,7 +368,7 @@ class CleversafeClient(StorageClient):
             return self.create_user(name)
 
     def get_or_create_bucket(
-            self, access_key=self._access_key, secret_key=self._secret_key, bucket_name):
+            self, bucket_name, access_key=self._access_key, secret_key=self._secret_key):
         """
         Tries to retrieve a bucket and if it doesn't exist, creates a new one
         """
@@ -376,9 +376,9 @@ class CleversafeClient(StorageClient):
         if bucket != None:
             return bucket
         else:
-            return self.create_bucket(access_key, secret_key, bucket_name)
+            return self.create_bucket(bucket_name, access_key, secret_key)
 
-    def create_bucket(self, access_key=self._access_key, secret_key=self._secret_key, bucket_name):
+    def create_bucket(self, bucket_name, access_key=self._access_key, secret_key=self._secret_key):
         """
         Requires a default template created on cleversafe
         """
