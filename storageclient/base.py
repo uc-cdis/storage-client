@@ -150,12 +150,21 @@ class StorageClient(object):
         raise NotImplementedError(msg)
 
     @abstractmethod
-    def get_or_create_bucket(self, access_key, secret_key, bucket):
+    def get_or_create_bucket(self, bucket, access_key=None, secret_key=None):
         """
         Tries to retrieve a bucket and if fit fails,
         creates and returns one
         """
         msg = "get_or_create_bucket not implemented"
+        raise NotImplementedError(msg)
+
+    @abstractmethod
+    def get_bucket(self, bucket, access_key=None, secret_key=None):
+        """
+        Tries to retrieve a bucket and if fit fails,
+        creates and returns one
+        """
+        msg = "get_bucket not implemented"
         raise NotImplementedError(msg)
 
     @abstractmethod
