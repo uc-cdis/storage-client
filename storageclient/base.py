@@ -159,6 +159,15 @@ class StorageClient(object):
         raise NotImplementedError(msg)
 
     @abstractmethod
+    def get_bucket(self, bucket, access_key, secret_key):
+        """
+        Tries to retrieve a bucket and if fit fails,
+        creates and returns one
+        """
+        msg = "get_bucket not implemented"
+        raise NotImplementedError(msg)
+
+    @abstractmethod
     def edit_bucket_template(self, template_id, **kwargs):
         """
         Change the parameters for the template used to create
