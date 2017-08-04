@@ -9,7 +9,6 @@ setup(
     install_requires=[
         'boto==2.46.1',
         'botocore==1.5.35',
-        'pyasn1==0.2.3',
         'requests==2.13.0',
         's3transfer==0.1.10',
         'jmespath==0.9.2',
