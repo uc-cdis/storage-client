@@ -7,7 +7,7 @@ setup(
     license="Apache",
     packages=find_packages(),
     install_requires=[
-        'boto==2.46.1',
+        'boto==2.36.0',
         'botocore==1.5.35',
         'requests==2.13.0',
         's3transfer==0.1.10',
