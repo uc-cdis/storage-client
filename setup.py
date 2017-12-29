@@ -9,13 +9,13 @@ setup(
     install_requires=[
         'boto==2.46.1',
         'botocore==1.5.35',
-        'requests==2.18.0',
+        'requests==2.18.4',
         's3transfer==0.1.10',
         'jmespath==0.9.2',
         'pbr==2.0.0',
         'cdispyutils'
     ],
     dependency_links=[
-        "git+https://github.com/uc-cdis/cdis-python-utils.git@692b30a06269226015d6d55bddbe75f8dbd26b96#egg=cdispyutils"
+        "git+https://github.com/uc-cdis/cdis-python-utils.git@b4760e4ec05176a23c1a9f0854cdf980a26c9762#egg=cdispyutils"
     ],
 )
