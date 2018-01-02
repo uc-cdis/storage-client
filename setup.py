@@ -16,6 +16,6 @@ setup(
         'cdispyutils'
     ],
     dependency_links=[
-        "git+https://github.com/uc-cdis/cdis-python-utils.git@b4760e4ec05176a23c1a9f0854cdf980a26c9762#egg=cdispyutils"
+        "git+https://github.com/uc-cdis/cdis-python-utils.git@df596aacb96c218b9926c72a80c53a1590f2d910#egg=cdispyutils"
     ],
 )
