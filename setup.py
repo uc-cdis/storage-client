@@ -9,7 +9,7 @@ setup(
     install_requires=[
         'boto==2.46.1',
         'botocore==1.5.35',
-        'requests==2.18.4',
+        'requests>=2.5.2,<3.0.0',
         's3transfer==0.1.10',
         'jmespath==0.9.2',
         'pbr==2.0.0',
