@@ -1,56 +1,52 @@
-from abc import abstractmethod, abstractproperty, ABCMeta
 from errors import ClientSideError
 import logging
 from cdispyutils.log import get_logger
+from storageclient.base import StorageClient
+from cirrus import GoogleCloudManager
 
 
-def handle_request(fun):
-    """
-    Exception treatment for the REST API calls
-    """
+class UserProxy(object):
 
-    def wrapper(self, *args, **kwargs):
-        """
-        We raise an exception when
-        the code on the client side fails
-        Server side errors are taken care of
-        through response codes
-        """
-        try:
-            return fun(self, *args, **kwargs)
-        except Exception as req_exception:
-            self.logger.exception("internal error")
-            raise ClientSideError(req_exception.message)
-
-    return wrapper
+    def __init__(self, username):
+        self.username = username
 
 
-class StorageClient(object):
-    """Abstract storage client class"""
-    __metaclass__ = ABCMeta
+class GoogleCloudStorageClient(StorageClient):
 
     def __init__(self, cls_name):
         self.logger = get_logger(cls_name)
         self.logger.setLevel(logging.DEBUG)
 
-    @abstractproperty
+    @property
     def provider(self):
         """
-        Name of the storage provider. eg: ceph
+        Returns the type of storage
         """
-        msg = "Provider not implemented"
-        raise NotImplementedError(msg)
+        return "GoogleCloudStorage"
 
-    @abstractmethod
     def get_user(self, username):
         """
         Get a user
-        :returns: a User object if the user exists, else None
-        """
-        msg = "get_user not implemented"
-        raise NotImplementedError(msg)
 
-    @abstractmethod
+        Args:
+            username (str): An email address representing a User's Google
+               Proxy Group (e.g. a single Google Group to hold a single
+               user's diff identities).
+
+        Returns:
+            UserProxy: a UserProxy object if the user exists, else None
+        """
+        user_proxy = None
+
+        with GoogleCloudManager() as g_mgr:
+            user_proxy_response = g_mgr.get_group(username)
+            if user_proxy_response.get("email"):
+                user_proxy = UserProxy(
+                    username=user_proxy_response.get("email")
+                )
+
+        return user_proxy
+
     def delete_user(self, username):
         """
         Delete a user
@@ -61,7 +57,6 @@ class StorageClient(object):
         msg = "delete_user not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def create_user(self, username):
         """
         Create a user
@@ -70,7 +65,6 @@ class StorageClient(object):
         msg = "create_user not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def list_users(self):
         """
         List users
@@ -79,17 +73,25 @@ class StorageClient(object):
         msg = "list_users not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def get_or_create_user(self, username):
         """
         Tries to retrieve a user.
-        If the user is not found, a new one
-        is created and returned
-        """
-        msg = "get_or_create_user not implemented"
-        raise NotImplementedError(msg)
 
-    @abstractmethod
+        WARNING: If the user is not found, this DOES NOT CREATE ONE.
+
+        Google architecture requires that a separate process populate
+        a proxy Google group per user. If it doesn't exist, we can't create it
+        here.
+        """
+        user_proxy = self.get_user(username)
+        if not user_proxy:
+            raise Exception(
+                "Unable to determine User's Google Proxy group. Cannot create "
+                "here. Another process should create proxy groups for "
+                "new users. Username provided: {}".format(username))
+
+        return user_proxy
+
     def create_keypair(self, username):
         """
         Creates a keypair for the user, and
@@ -98,7 +100,6 @@ class StorageClient(object):
         msg = "create_keypair not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def delete_keypair(self, username, access_key):
         """
         Deletes a keypair from the user and
@@ -107,15 +108,24 @@ class StorageClient(object):
         msg = "delete_keypair not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def add_bucket_acl(self, bucket, username, access=None):
         """
         Tries to grant a user access to a bucket
-        """
-        msg = "add_bucket_acl not implemented"
-        raise NotImplementedError(msg)
 
-    @abstractmethod
+        Args:
+            bucket (str): Google Bucket Access Group email address. This should
+                be the address of a Google Group that has read access on a
+                single bucket. Access is controlled by adding members to this
+                group.
+            username (str): An email address of a member to add to the Google
+                Bucket Access Group.
+        """
+        response = None
+        with GoogleCloudManager() as g_mgr:
+            response = g_mgr.add_member_to_group(
+                member_email=username, group_id=bucket)
+        return response
+
     def has_bucket_access(self, bucket, user_id):
         """
         Check if the user appears in the acl
@@ -124,7 +134,6 @@ class StorageClient(object):
         msg = "has_bucket_access not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def list_buckets(self):
         """
         Return a list of Bucket objects
@@ -133,7 +142,6 @@ class StorageClient(object):
         msg = "list_buckets not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def delete_all_keypairs(self, user):
         """
         Remove all the keys from a user
@@ -142,7 +150,6 @@ class StorageClient(object):
         msg = "delete_all_keypairs not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def get_bucket(self, bucket):
         """
         Return a bucket from the storage
@@ -150,7 +157,6 @@ class StorageClient(object):
         msg = "get_bucket not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def get_or_create_bucket(self, bucket, access_key=None, secret_key=None):
         """
         Tries to retrieve a bucket and if fit fails,
@@ -159,16 +165,6 @@ class StorageClient(object):
         msg = "get_or_create_bucket not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
-    def get_bucket(self, bucket, access_key=None, secret_key=None):
-        """
-        Tries to retrieve a bucket and if fit fails,
-        creates and returns one
-        """
-        msg = "get_bucket not implemented"
-        raise NotImplementedError(msg)
-
-    @abstractmethod
     def edit_bucket_template(self, template_id, **kwargs):
         """
         Change the parameters for the template used to create
@@ -177,7 +173,6 @@ class StorageClient(object):
         msg = "edit_bucket_template not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def update_bucket_acl(self, bucket, user_list):
         """
         Add acl's for the list of users
@@ -185,7 +180,6 @@ class StorageClient(object):
         msg = "update_bucket_acl not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def set_bucket_quota(self, bucket, quota_unit, quota):
         """
         Set quota for the entire bucket
@@ -193,33 +187,20 @@ class StorageClient(object):
         msg = "set_bucket_quota not implemented"
         raise NotImplementedError(msg)
 
-    @abstractmethod
     def delete_bucket_acl(self, bucket, user):
         """
         Set quota for the entire bucket
-        """
-        msg = "delete_bucket_acl not implemented"
-        raise NotImplementedError(msg)
 
-
-class User(object):
-    def __init__(self, username):
+        Args:
+            bucket (str): Google Bucket Access Group email address. This should
+                be the address of a Google Group that has read access on a
+                single bucket. Access is controlled by adding members to this
+                group.
+            user (str): An email address of a member to add to the Google
+                Bucket Access Group.
         """
-        - permissions {'bucketname': 'PERMISSION'}
-        - keys [{'access_key': abc,'secret_key': 'def'}]
-        """
-        self.username = username
-        self.permissions = {}
-        self.keys = []
-        self.id = None
-
-
-class Bucket(object):
-    def __init__(self, name, bucket_id, quota):
-        """
-        Simple bucket representation
-        Quota is in TiBs or such units
-        """
-        self.name = name
-        self.id = bucket_id
-        self.quota = quota
+        response = None
+        with GoogleCloudManager() as g_mgr:
+            response = g_mgr.remove_member_from_group(
+                member_email=user, group_id=bucket)
+        return response
