@@ -15,9 +15,5 @@ setup(
         'pbr==2.0.0',
         'cdispyutils',
         'cirrus'
-    ],
-    dependency_links=[
-        "git+https://github.com/uc-cdis/cdis-python-utils.git@0.2.8#egg=cdispyutils-0.2.8"
-        "git+https://github.com/uc-cdis/cirrus.git@9e7fecb8bcf3245bd63dcdd139bb9821927113a6#egg=cirrus"
-    ],
+    ]
 )
