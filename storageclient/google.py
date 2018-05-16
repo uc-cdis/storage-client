@@ -1,7 +1,5 @@
-from errors import ClientSideError
-import logging
-from cdispyutils.log import get_logger
 from storageclient.base import StorageClient
+from storageclient.errors import NotFoundError, RequestError
 from cirrus import GoogleCloudManager
 
 
@@ -13,9 +11,9 @@ class UserProxy(object):
 
 class GoogleCloudStorageClient(StorageClient):
 
-    def __init__(self, cls_name):
-        self.logger = get_logger(cls_name)
-        self.logger.setLevel(logging.DEBUG)
+    def __init__(self, config):
+        super(GoogleCloudStorageClient, self).__init__(__name__)
+        self._config = config
 
     @property
     def provider(self):
@@ -119,11 +117,21 @@ class GoogleCloudStorageClient(StorageClient):
                 group.
             username (str): An email address of a member to add to the Google
                 Bucket Access Group.
+            access (str): IGNORED. For Google buckets, the google bucket
+                access group is given access to the bucket through Google's
+                IAM, so you cannot selectively choose permissions. Once you're
+                added, you have the access that was set up in Google IAM.
+                At the moment, the default access is READ-ONLY.
         """
         response = None
         with GoogleCloudManager() as g_mgr:
-            response = g_mgr.add_member_to_group(
-                member_email=username, group_id=bucket)
+            try:
+                response = g_mgr.add_member_to_group(
+                    member_email=username, group_id=bucket)
+            except Exception as exc:
+                raise RequestError(
+                    "Google API Error: {}".format(exc),
+                    code=400)
         return response
 
     def has_bucket_access(self, bucket, user_id):
@@ -201,6 +209,12 @@ class GoogleCloudStorageClient(StorageClient):
         """
         response = None
         with GoogleCloudManager() as g_mgr:
-            response = g_mgr.remove_member_from_group(
-                member_email=user, group_id=bucket)
+            try:
+                response = g_mgr.remove_member_from_group(
+                    member_email=user, group_id=bucket)
+            except Exception as exc:
+                raise RequestError(
+                    "Google API Error: {}".format(exc),
+                    code=400)
+
         return response
