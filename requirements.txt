@@ -1,0 +1,1 @@
+-e git+https://github.com/uc-cdis/cdis-python-utils.git@0.2.8#egg=cdispyutils-0.2.8
