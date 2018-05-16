@@ -3,4 +3,4 @@
 # storage-client
 python package to talk to cleversafe admin API
 
-also has limited capabilites of managing access Google buckets
+also has limited capabilites of managing access to Google buckets
