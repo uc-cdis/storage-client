@@ -17,6 +17,15 @@ from storageclient.errors import RequestError, NotFoundError
 
 class TestGoogleCloudStorageClient(object):
 
+    def test_client_creation(
+            self, google_cloud_storage_client, test_cloud_manager):
+        """
+        Ensure that a google project id gets populated
+        """
+        assert (
+            google_cloud_storage_client.google_project_id == 'test-google-project'
+        )
+
     def test_get_user_success(
             self, google_cloud_storage_client, test_cloud_manager):
         """

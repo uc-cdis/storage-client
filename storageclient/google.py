@@ -14,6 +14,7 @@ class GoogleCloudStorageClient(StorageClient):
     def __init__(self, config):
         super(GoogleCloudStorageClient, self).__init__(__name__)
         self._config = config
+        self.google_project_id = config.get('google_project_id')
 
     @property
     def provider(self):
@@ -36,7 +37,7 @@ class GoogleCloudStorageClient(StorageClient):
         """
         user_proxy = None
 
-        with GoogleCloudManager() as g_mgr:
+        with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
             user_proxy_response = g_mgr.get_group(username)
             if user_proxy_response.get("email"):
                 user_proxy = UserProxy(
@@ -124,7 +125,7 @@ class GoogleCloudStorageClient(StorageClient):
                 At the moment, the default access is READ-ONLY.
         """
         response = None
-        with GoogleCloudManager() as g_mgr:
+        with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
             try:
                 response = g_mgr.add_member_to_group(
                     member_email=username, group_id=bucket)
@@ -208,7 +209,7 @@ class GoogleCloudStorageClient(StorageClient):
                 Bucket Access Group.
         """
         response = None
-        with GoogleCloudManager() as g_mgr:
+        with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
             try:
                 response = g_mgr.remove_member_from_group(
                     member_email=user, group_id=bucket)

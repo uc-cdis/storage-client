@@ -25,6 +25,7 @@ from storageclient.google import GoogleCloudStorageClient
 
 @pytest.fixture
 def google_cloud_storage_client():
+    cred.credentials.update({'google_project_id': 'test-google-project'})
     return GoogleCloudStorageClient(cred.credentials)
 
 
