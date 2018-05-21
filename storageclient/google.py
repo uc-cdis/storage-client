@@ -125,14 +125,15 @@ class GoogleCloudStorageClient(StorageClient):
                 At the moment, the default access is READ-ONLY.
         """
         response = None
-        with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
-            try:
-                response = g_mgr.add_member_to_group(
-                    member_email=username, group_id=bucket)
-            except Exception as exc:
-                raise RequestError(
-                    "Google API Error: {}".format(exc),
-                    code=400)
+        if 'read-storage' in access:
+            with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
+                try:
+                    response = g_mgr.add_member_to_group(
+                        member_email=username, group_id=bucket)
+                except Exception as exc:
+                    raise RequestError(
+                        "Google API Error: {}".format(exc),
+                        code=400)
         return response
 
     def has_bucket_access(self, bucket, user_id):
