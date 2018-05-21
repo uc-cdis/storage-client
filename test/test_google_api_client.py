@@ -49,6 +49,7 @@ class TestGoogleCloudStorageClient(object):
         """
         with pytest.raises(RequestError):
             google_cloud_storage_client.add_bucket_acl(
+                access=['read-storage'],
                 bucket='test_bucket',
                 username='NonExistent')
 
@@ -59,6 +60,7 @@ class TestGoogleCloudStorageClient(object):
         """
         with pytest.raises(RequestError):
             google_cloud_storage_client.add_bucket_acl(
+                access=['read-storage'],
                 bucket='NonExistent',
                 username='user0_proxy_group@example.com')
 
@@ -68,6 +70,7 @@ class TestGoogleCloudStorageClient(object):
         Successful addition of ACL to bucket
         """
         response = google_cloud_storage_client.add_bucket_acl(
+            access=['read-storage'],
             bucket='test_bucket',
             username='user0_proxy_group@example.com')
 
@@ -81,9 +84,9 @@ class TestGoogleCloudStorageClient(object):
         supplied (should be ignored for Google)
         """
         response = google_cloud_storage_client.add_bucket_acl(
+            access=['read-storage'],
             bucket='test_bucket',
-            username='user0_proxy_group@example.com',
-            access=['read-storage'])
+            username='user0_proxy_group@example.com')
 
         # the response should contain the newly added email
         assert response.get("email") == 'user0_proxy_group@example.com'
