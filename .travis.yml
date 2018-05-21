@@ -1,9 +1,24 @@
+---
 language: python
-python: 2.7
+
+python:
+  - "2.7"
+  - "3.6"
+
+matrix:
+  allow_failures:
+    - python: "3.6"
+
+sudo: false
+
+cache: pip
+
 install:
-   - pip install -r requirements.txt
-   - python setup.py install
-   - pip install -r dev-requirements.txt
+  - pip install --upgrade setuptools
+  - pip install -r requirements.txt
+  - python setup.py install
+  - pip install -r dev-requirements.txt
+
 script:
-   - nosetests -v test/test_cleversafe_api_client.py
-   - pytest test/test_google_api_client.py -vv
+  - nosetests -v test/test_cleversafe_api_client.py
+  - pytest test/test_google_api_client.py -vv
