@@ -1,5 +1,5 @@
 from storageclient.base import StorageClient
-from storageclient.errors import NotFoundError, RequestError
+from storageclient.errors import RequestError
 from cirrus import GoogleCloudManager
 
 
@@ -118,22 +118,22 @@ class GoogleCloudStorageClient(StorageClient):
                 group.
             username (str): An email address of a member to add to the Google
                 Bucket Access Group.
-            access (str): IGNORED. For Google buckets, the google bucket
-                access group is given access to the bucket through Google's
+            access (str): IGNORED. For Google buckets, the Google Bucket Access
+                Group is given access to the bucket through Google's
                 IAM, so you cannot selectively choose permissions. Once you're
-                added, you have the access that was set up in Google IAM.
-                At the moment, the default access is READ-ONLY.
+                added, you have the access that was set up for that group
+                in Google IAM.
         """
         response = None
-        if 'read-storage' in access:
-            with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
-                try:
-                    response = g_mgr.add_member_to_group(
-                        member_email=username, group_id=bucket)
-                except Exception as exc:
-                    raise RequestError(
-                        "Google API Error: {}".format(exc),
-                        code=400)
+        with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
+            try:
+                response = g_mgr.add_member_to_group(
+                    member_email=username, group_id=bucket)
+            except Exception as exc:
+                raise RequestError(
+                    "Google API Error: {}".format(exc),
+                    code=400)
+
         return response
 
     def has_bucket_access(self, bucket, user_id):
