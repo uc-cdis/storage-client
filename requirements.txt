@@ -1,2 +1,2 @@
 -e git+https://github.com/uc-cdis/cdis-python-utils.git@0.2.8#egg=cdispyutils-0.2.8
--e git+https://github.com/uc-cdis/cirrus.git@b03c5fb898f1700c4283380547d0e5706320efbf#egg=cirrus
+-e git+https://github.com/uc-cdis/cirrus.git@0e31339e76905470be661a19cc34802eaa15b70d#egg=cirrus
