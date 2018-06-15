@@ -1,7 +1,7 @@
 from abc import abstractmethod, abstractproperty, ABCMeta
 from errors import ClientSideError
 import logging
-from cdispyutils.log import get_logger
+from cdislogging import get_logger
 
 
 def handle_request(fun):
