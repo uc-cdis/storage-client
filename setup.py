@@ -13,7 +13,7 @@ setup(
         's3transfer==0.1.10',
         'jmespath==0.9.2',
         'pbr==2.0.0',
-        'cdispyutils',
+        'cdislogging',
         'cirrus'
     ]
 )
