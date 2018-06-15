@@ -13,9 +13,7 @@ setup(
         's3transfer==0.1.10',
         'jmespath==0.9.2',
         'pbr==2.0.0',
-        'cdispyutils'
-    ],
-    dependency_links=[
-        "git+https://github.com/uc-cdis/cdis-python-utils.git@0.2.2#egg=cdispyutils"
-    ],
+        'cdispyutils',
+        'cirrus'
+    ]
 )

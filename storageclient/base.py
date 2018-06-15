@@ -3,6 +3,7 @@ from errors import ClientSideError
 import logging
 from cdispyutils.log import get_logger
 
+
 def handle_request(fun):
     """
     Exception treatment for the REST API calls
@@ -212,12 +213,13 @@ class User(object):
         self.keys = []
         self.id = None
 
+
 class Bucket(object):
     def __init__(self, name, bucket_id, quota):
         """
         Simple bucket representation
         Quota is in TiBs or such units
         """
-        self.name = name 
+        self.name = name
         self.id = bucket_id
         self.quota = quota
