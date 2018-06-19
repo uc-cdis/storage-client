@@ -21,7 +21,7 @@ class GoogleCloudStorageClient(StorageClient):
         """
         Returns the type of storage
         """
-        return "GoogleCloudStorage"
+        return "google"
 
     def get_user(self, username):
         """

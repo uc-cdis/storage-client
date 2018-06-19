@@ -187,7 +187,7 @@ class CleversafeClient(StorageClient):
         """
         Returns the type of storage
         """
-        return "Cleversafe"
+        return "cleversafe"
 
     def list_users(self):
         """
