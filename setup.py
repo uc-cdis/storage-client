@@ -14,6 +14,6 @@ setup(
         'jmespath==0.9.2',
         'pbr==2.0.0',
         'cdislogging',
-        'cirrus',
+        'gen3cirrus>=0.3.0,<1.0.0',
     ]
 )
