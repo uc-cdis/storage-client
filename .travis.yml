@@ -23,5 +23,4 @@ before_script:
   - sudo rm -f /etc/boto.cfg
 
 script:
-  - nosetests -v test/test_cleversafe_api_client.py
-  - pytest test/test_google_api_client.py -vv
+  - pytest -vv test
