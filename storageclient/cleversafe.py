@@ -11,7 +11,7 @@ from urllib import urlencode
 import json
 from base import StorageClient, User, Bucket, handle_request
 from errors import RequestError, NotFoundError
-
+import logging
 
 class CleversafeClient(StorageClient):
     """
@@ -46,6 +46,8 @@ class CleversafeClient(StorageClient):
             aws_secret_access_key=self._secret_key,
             host=self._public_host,
             calling_format=connection.OrdinaryCallingFormat())
+        logging.basicConfig()
+        self.logger.setLevel(logging.INFO)
         self._bucket_name_id_table = {}
         self._update_bucket_name_id_table()
         self._user_name_id_table = {}
@@ -474,13 +476,20 @@ class CleversafeClient(StorageClient):
             raise NotFoundError(msg.format(bucket))
         try:
             access_lvl = max(self._permissions_order[role] for role in access)
-            data = {'id': self._get_user_id(username), bucket_param: self._permissions_value[access_lvl]}
-            if access_lvl == 3:
-                data['rolesMap[vaultProvisioner]'] = 'true'
-        except KeyError:
-            msg = "User {0} wasn't found on the database"
-            self.logger.error(msg.format(username))
-            raise NotFoundError(msg.format(username))
+        except KeyError as error_msg:
+            msg = "Permission {0} wasn't found: {1}"
+            self.logger.error(msg.format(access, error_msg))
+            raise NotFoundError(msg.format(access, error_msg))
+        else:
+            try:
+                data = {'id': self._get_user_id(username), bucket_param: self._permissions_value[access_lvl]}
+                if access_lvl == 3:
+                    data['rolesMap[vaultProvisioner]'] = 'true'
+
+            except KeyError as error_msg:
+                msg = "User {0} wasn't found on the database: {1}"
+                self.logger.error(msg.format(username, error_msg))
+                raise NotFoundError(msg.format(username, error_msg))
         response = self._request('POST', 'editAccount.adm', payload=data)
         if response.status_code != 200:
             msg = "Error trying to change buket permissions for user {0}"
