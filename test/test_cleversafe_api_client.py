@@ -55,7 +55,7 @@ class CleversafeManagerTests(unittest.TestCase):
         Retrieval of a nonexistent user
         """
         user = self.cm.get_user("NonExistent")
-        self.assertEquals(user, None)
+        self.assertEqual(user, None)
 
     def test_get_bucket_by_id_success(self):
         """
@@ -85,9 +85,9 @@ class CleversafeManagerTests(unittest.TestCase):
         in the form of a list of User objects
         """
         user_list = self.cm.list_users()
-        self.assertEquals(user_list[0].id, 72)
-        self.assertEquals(user_list[1].id, 1)
-        self.assertEquals(user_list[2].id, 95)
+        self.assertEqual(user_list[0].id, 72)
+        self.assertEqual(user_list[1].id, 1)
+        self.assertEqual(user_list[2].id, 95)
 
     def test_create_user_success(self):
         """
@@ -110,8 +110,8 @@ class CleversafeManagerTests(unittest.TestCase):
         """
         keypair = self.cm.create_keypair("KeyPairUser")
         self.assertEqual(keypair,
-                         {'access_key': u'XXXXXXXXXXXXXX',
-                          'secret_key': u'AAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHNNNNNN'})
+                         {'access_key': 'XXXXXXXXXXXXXX',
+                          'secret_key': 'AAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHNNNNNN'})
 
     def test_delete_keypair_success(self):
         """
@@ -132,7 +132,7 @@ class CleversafeManagerTests(unittest.TestCase):
         Successful change of a bucket quota
         """
         response = self.cm.set_bucket_quota("Testforreal", "TB", "1")
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_set_bucket_quota_error_response(self):
         """

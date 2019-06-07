@@ -7,10 +7,10 @@ from boto.s3 import connection
 from boto.exception import S3ResponseError
 from boto.s3.acl import Grant
 import requests
-from urllib import urlencode
+from urllib.parse import urlencode
 import json
-from base import StorageClient, User, Bucket, handle_request
-from errors import RequestError, NotFoundError
+from .base import StorageClient, User, Bucket, handle_request
+from .errors import RequestError, NotFoundError
 
 
 class CleversafeClient(StorageClient):
