@@ -155,7 +155,7 @@ class CleversafeClient(StorageClient):
         except KeyError as key_e:
             msg = "Failed to parse the user data. Check user fields inside the accounts section"
             self.logger.error(msg)
-            raise RequestError(key_e.message, "200")
+            raise RequestError(str(key_e), "200")
 
     def _get_bucket_by_id(self, vid):
         """
@@ -314,7 +314,7 @@ class CleversafeClient(StorageClient):
                 exception = True
                 msg = "Remove all keys failed for one key"
                 self.logger.error(msg.format(exce.code))
-                responses_list.append(exce.message)
+                responses_list.append(str(exce))
                 responses_codes.append(exce.code)
         if exception:
             raise RequestError(responses_list, responses_codes)
@@ -352,7 +352,7 @@ class CleversafeClient(StorageClient):
             return Bucket(bucket, bucket_id, vault['responseData']['vaults'][0]['hardQuota'])
         except KeyError as exce:
             self.logger.error("Get bucket not found on cache")
-            raise RequestError(exce.message, "NA")
+            raise RequestError(str(exce), "NA")
         except RequestError as exce:
             self.logger.error("Get bucket failed retrieving bucket info")
             raise exce
@@ -402,7 +402,7 @@ class CleversafeClient(StorageClient):
         except S3ResponseError as exce:
             msg = "Create bucket failed with error code: {0}"
             self.logger.error(msg.format(exce.error_code))
-            raise RequestError(exce.message, exce.error_code)
+            raise RequestError(str(exce), exce.error_code)
 
     def edit_bucket_template(self, default_template_id, **kwargs):
         """

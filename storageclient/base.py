@@ -20,7 +20,7 @@ def handle_request(fun):
             return fun(self, *args, **kwargs)
         except Exception as req_exception:
             self.logger.exception("internal error")
-            raise ClientSideError(req_exception.message)
+            raise ClientSideError(str(req_exception))
 
     return wrapper
 
