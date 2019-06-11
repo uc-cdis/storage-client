@@ -1,26 +1,27 @@
----
 language: python
-
 python:
-  - "2.7"
-  - "3.6"
-
+- '2.7'
+- '3.6'
 matrix:
   allow_failures:
-    - python: "2.7"
-
+  - python: '2.7'
 sudo: false
-
 cache: pip
-
 install:
-  - pip install --upgrade setuptools
-  - pip install -r requirements.txt
-  - python setup.py install
-  - pip install -r dev-requirements.txt
-
+- pip install --upgrade setuptools
+- pip install -r requirements.txt
+- python setup.py install
+- pip install -r dev-requirements.txt
+- if [[ $TRAVIS_PYTHON_VERSION == 3.6 ]]; then pip install -e git+https://git@github.com/uc-cdis/wool.git#egg=wool;
+  fi
 before_script:
-  - sudo rm -f /etc/boto.cfg
-
+- sudo rm -f /etc/boto.cfg
 script:
-  - pytest -vv test
+- pytest -vv test
+after_script:
+- if [[ $TRAVIS_PYTHON_VERSION == 3.6 && $PR_NUMBER != false ]]; then wool; fi
+env:
+  matrix:
+  - REPOSITORY="uc-cdis/storage-client" PR_NUMBER="$TRAVIS_PULL_REQUEST"
+  global:
+    secure: il+HSbAEuhvn9rpOAH984qs/WE58rIv+YCrnnRKaoBj0kuQRWoBZYQz3wNlbGjd+DriiTl9XyvNIUgB6cdAxLL2+2olUJMzIITyJnzcO5nKQSe4iSE/xIhpFoPHrXQweHhbALS7xhrxkRPZJUmcK9lAEqv2MALHE9x4H83CHdp2LTSG09ihOffL3W8KsPwDnxvyzeWjyMc5kiCNtxuf90zrY1WcKPIxBfE0NkezKuT0mVHzbci5f9RLJNwI+xhS7soDQSNW/t7JjomDHmKdWwMAZ7DFLSrYmfyL/zpBKE36ZIhXrZGHuGkQN+ae2G1ERRpwuZoa2Ur8ch1XFnCWgMucuRB8DW87zcStKOwXmaV+pf7u4WpuOYzwrp0GeXQ/usTDvVIRWu/OuxkOvvb7i38HcGbpEf5GEEHpvo4g8XDdpYaMNZLYgMS0jpGdbZC7Dk+jR2zeX9fA7VguyISnPmChLnEO1RZftRoEpCz64ys9UHdAP+20KH7FkhtYHKYHq8VDASeRG5L4DmpO096ltqzmQEC/zJiN8YIiDRMsvU+atOQbb3z+a4zM2XKCPZC6QkT+BtXG2LkOO3oQxfzI4VG4V/xRyaQBhqyQgdUerKMAAxDIh0q6+hfq4YK6f8+GbUUeNwMco57Eg4ps+HNUqObnovJaO0eKXexK8w0aRFxg=
