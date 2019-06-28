@@ -12,16 +12,8 @@ install:
 - pip install -r requirements.txt
 - python setup.py install
 - pip install -r dev-requirements.txt
-- if [[ $TRAVIS_PYTHON_VERSION == 3.6 ]]; then pip install -e git+https://git@github.com/uc-cdis/wool.git#egg=wool;
   fi
 before_script:
 - sudo rm -f /etc/boto.cfg
 script:
 - pytest -vv test
-after_script:
-- if [[ $TRAVIS_PYTHON_VERSION == 3.6 && $PR_NUMBER != false ]]; then wool; fi
-env:
-  matrix:
-  - REPOSITORY="uc-cdis/storage-client" PR_NUMBER="$TRAVIS_PULL_REQUEST"
-  global:
-    secure: W7RLD1pW2D+65zkwcIck1UETF4AJTHBtYizuNsb3pko2MGwC6cxiOCJkyd03u56LTqRsHVC1eLW274p1V0IZEb22PyVt/zh/ankq9hB+8L/RC3lddGoTSTeHk6ZkHor4MvowT9PlW5BDrQUQl5YrlLLslJgWLuhGNYeO8uE7UacX66uzdpvOoKioNSSzrBO5lc1uNUwWIPhkb7SH9ddPRBUp+2ECSaWPSS7hnkd794eemHrj+89A1fgspIaXo+G4MvposiAiQsSne1zEbZJm/kXrBjFKKOpTndIB5Ch7SewZw+K+XQLEcAvjhxeIHY0qsSLVAFH0P60kL52MyfwxhqcQNh1zk2QKFChLiFSHM+ZIW423muvnJVHJft37CNFtYdKAoR10zD6cF4gg+0LmgYszN9YwW571aIVR02xJi+/NaqdcT02amjZSbe9uWCpeIy39k986HS/acXCPdqiu+VVNk6117EABI3QNbAoSUwXPYEVH9W4hfXfaCQXLAafbGRgrUVnmgBDHqsHqThc9vx+fL3i/5o2QFmBaJlX+FPDBJ+A4CBATAs2vxiSZsXZgpmTASE765ucHpXgFON5/IPFculC7Wie2ZzQA2p5OrTIc811FrjGTcGFAnhuNFLSI11k71eGfqnj0OnDPZF7ykxJ6rvScx9sOd9MhGtTLCQ8=
