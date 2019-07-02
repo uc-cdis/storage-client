@@ -1,2 +1,2 @@
 cdislogging==1.0.0
-gen3cirrus==0.3.0
+gen3cirrus==1.0.0
