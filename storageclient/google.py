@@ -4,17 +4,15 @@ from cirrus import GoogleCloudManager
 
 
 class UserProxy(object):
-
     def __init__(self, username):
         self.username = username
 
 
 class GoogleCloudStorageClient(StorageClient):
-
     def __init__(self, config):
         super(GoogleCloudStorageClient, self).__init__(__name__)
         self._config = config
-        self.google_project_id = config.get('google_project_id')
+        self.google_project_id = config.get("google_project_id")
 
     @property
     def provider(self):
@@ -40,9 +38,7 @@ class GoogleCloudStorageClient(StorageClient):
         with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
             user_proxy_response = g_mgr.get_group(username)
             if user_proxy_response.get("email"):
-                user_proxy = UserProxy(
-                    username=user_proxy_response.get("email")
-                )
+                user_proxy = UserProxy(username=user_proxy_response.get("email"))
 
         return user_proxy
 
@@ -87,7 +83,8 @@ class GoogleCloudStorageClient(StorageClient):
             raise Exception(
                 "Unable to determine User's Google Proxy group. Cannot create "
                 "here. Another process should create proxy groups for "
-                "new users. Username provided: {}".format(username))
+                "new users. Username provided: {}".format(username)
+            )
 
         return user_proxy
 
@@ -128,11 +125,10 @@ class GoogleCloudStorageClient(StorageClient):
         with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
             try:
                 response = g_mgr.add_member_to_group(
-                    member_email=username, group_id=bucket)
+                    member_email=username, group_id=bucket
+                )
             except Exception as exc:
-                raise RequestError(
-                    "Google API Error: {}".format(exc),
-                    code=400)
+                raise RequestError("Google API Error: {}".format(exc), code=400)
 
         return response
 
@@ -213,10 +209,9 @@ class GoogleCloudStorageClient(StorageClient):
         with GoogleCloudManager(project_id=self.google_project_id) as g_mgr:
             try:
                 response = g_mgr.remove_member_from_group(
-                    member_email=user, group_id=bucket)
+                    member_email=user, group_id=bucket
+                )
             except Exception as exc:
-                raise RequestError(
-                    "Google API Error: {}".format(exc),
-                    code=400)
+                raise RequestError("Google API Error: {}".format(exc), code=400)
 
         return response

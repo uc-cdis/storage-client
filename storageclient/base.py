@@ -1,5 +1,5 @@
 from abc import abstractmethod, abstractproperty, ABCMeta
-from errors import ClientSideError
+from .errors import ClientSideError
 import logging
 from cdislogging import get_logger
 
@@ -20,14 +20,13 @@ def handle_request(fun):
             return fun(self, *args, **kwargs)
         except Exception as req_exception:
             self.logger.exception("internal error")
-            raise ClientSideError(req_exception.message)
+            raise ClientSideError(str(req_exception))
 
     return wrapper
 
 
-class StorageClient(object):
+class StorageClient(object, metaclass=ABCMeta):
     """Abstract storage client class"""
-    __metaclass__ = ABCMeta
 
     def __init__(self, cls_name):
         self.logger = get_logger(cls_name)

@@ -1,2 +1,2 @@
-gen3cirrus==0.3.0
--e git+https://github.com/uc-cdis/cdislogging.git@master#egg=cdislogging
+cdislogging==1.0.0
+gen3cirrus==1.0.0
