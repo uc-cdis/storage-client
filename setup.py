@@ -8,7 +8,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "boto>=2.36.0,<3.0.0",
-        "botocore>=1.7,<1.10.39",
+        "botocore>=1.7,<1.9.0",
         "requests>=2.5.2,<3.0.0",
         "s3transfer==0.1.10",
         "jmespath==0.9.2",
