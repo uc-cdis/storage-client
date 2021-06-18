@@ -13,7 +13,7 @@ setup(
         "s3transfer<0.3.0,>=0.2.0",
         "jmespath==0.9.2",
         "pbr==2.0.0",
-        "cdislogging",
-        "gen3cirrus>=1.0.0,<2.0.0",
+        "cdislogging>=1.0.0,<2.0.0",
+        "gen3cirrus>=1.0.0,<3.0.0",
     ],
 )
