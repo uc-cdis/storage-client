@@ -9,7 +9,7 @@ setup(
     install_requires=[
         "boto>=2.36.0",
         "botocore>=1.7",
-        "urllib3>=1.20",  # as required by botocore-1.12.253
+        "urllib3>=1.26.5",  # as required by botocore-1.12.253
         "six>=1.13.0",  # as required by google-api-core
         "protobuf<3.18.0,>=3.12.0", # as required by google-api-core
         "requests>=2.5.2",
