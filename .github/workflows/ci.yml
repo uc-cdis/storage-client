@@ -1,0 +1,26 @@
+name: Unit Tests
+
+on: [push]
+
+jobs:
+
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.10.0
+    - name: Cleanup
+      run: |
+        sudo rm -f /etc/boto.cfg
+    - name: Install dependencies
+      run: |
+        pip install --upgrade setuptools
+        pip install -r requirements.txt
+        python setup.py install
+        pip install -r dev-requirements.txt
+    - name: Test with pytest
+      run: |
+        pytest -vv test
